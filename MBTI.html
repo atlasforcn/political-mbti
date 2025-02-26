@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人格測驗</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- 初始頁面 -->
+        <div id="startPage" class="container">
+            <div class="start-content">
+                <h1>探索你的政治人格！</h1>
+                
+                <p class="intro-text">你對社會議題的選擇背後，藏著什麼樣的價值觀與內涵？</p>
+                
+                <p>我們設計了一個專注於政治與社會議題的測驗，幫助你更了解自己在 「大政府 vs 小政府」、「平等 vs 公平」、「進取 vs 保守」、「個人責任 vs 環境責任」 這四大光譜中的位置。這些光譜反映出你的核心價值，並揭示你的獨特政治人格。</p>
+                
+                <div class="notice-section">
+                    <h2>重要提醒：</h2>
+                    <p>這是一個正在不斷完善的測驗，問題設計與分析方法都在持續優化中。我們希望在未來能提供更精確、更有趣的結果。如果在測驗過程中有任何想法或建議，歡迎與我們分享！</p>
+                </div>
+                
+                <div class="why-section">
+                    <h2>為什麼要參加？</h2>
+                    <ul>
+                        <li><strong>更了解自己：</strong>挖掘自己在重要社會議題上的真實立場與價值觀。</li>
+                        <li><strong>激發思考：</strong>透過深思熟慮的問題，挑戰你對政治與社會議題的理解。</li>
+                        <li><strong>找到共鳴：</strong>看看你是哪一類型的政治人格，並與朋友比較！</li>
+                    </ul>
+                </div>
+                
+                <p class="final-text">立即開始測試，探索自己的價值選擇與內在深處的政治思維吧！</p>
+                
+                <button class="btn start-btn" onclick="startTest()">開始測試</button>
+            </div>
+        </div>
+
+        <!-- 問題頁面 -->
+        <div id="questionPage" class="container" style="display: none;">
+            <div class="question-card">
+                <h2 id="questionText" class="question-text"></h2>
+                <div id="options" class="options-container"></div>
+            </div>
+            <div class="progress-section">
+                <div class="progress-bar">
+                    <div id="progress" class="progress"></div>
+                </div>
+                <div id="progressText">進度：0/8</div>
+            </div>
+        </div>
+
+        <!-- 結果頁面 -->
+        <div id="resultPage" class="container" style="display: none;">
+            <div class="result-card">
+                <h2 class="result-title">您的 政治人格 類型是</h2>
+                <div id="result" class="result-content"></div>
+                <div class="result-description" id="resultDescription"></div>
+                <button class="btn restart-btn" onclick="restartTest()">重新測試</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="personality-types.js"></script>
+    <script>
+        // 只保留邏輯相關的 JavaScript 程式碼
+        let currentQuestion = 0;
+        let answers = [];
+        
+        function startTest() {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('questionPage').style.display = 'block';
+            document.getElementById('resultPage').style.display = 'none';
+            showQuestion(currentQuestion);
+        }
+
+        // 載入問題
+        function showQuestion(index) {
+            const questionText = document.getElementById('questionText');
+            const optionsContainer = document.getElementById('options');
+            const progressBar = document.getElementById('progress');
+            const progressText = document.getElementById('progressText');
+
+            questionText.textContent = questions[index].text;
+            optionsContainer.innerHTML = '';
+
+            ["是", "否"].forEach((option, i) => {
+                const button = document.createElement('button');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => selectOption(index, i);
+                if (answers[index] === i) {
+                    button.classList.add('selected');
+                }
+                optionsContainer.appendChild(button);
+            });
+
+            // 使用 questions.length 來動態計算進度
+            const totalQuestions = questions.length;
+            progressBar.style.width = `${((index + 1) / totalQuestions) * 100}%`;
+            progressText.textContent = `進度：${index + 1}/${totalQuestions}`;
+        }
+
+        // 回答問題
+        function selectOption(questionIndex, optionIndex) {
+            const options = document.querySelectorAll('.option');
+            options.forEach(option => option.classList.remove('selected'));
+            options[optionIndex].classList.add('selected');
+            answers[questionIndex] = optionIndex;
+
+            setTimeout(() => {
+                if (questionIndex < questions.length - 1) {
+                    currentQuestion++;
+                    showQuestion(currentQuestion);
+                } else {
+                    showResult();
+                }
+            }, 300);
+        }
+
+        // 計算結果
+        function calculatePersonalityType() {
+            let traits = {
+                government_size: 0,
+                equality: 0,
+                progress: 0,
+                responsibility: 0
+            };
+            
+            // 計算每個維度的得分並標準化
+            let dimensionCounts = {
+                government_size: 0,
+                equality: 0,
+                progress: 0,
+                responsibility: 0
+            };
+
+            // 計算每個維度的得分
+            for (let i = 0; i < answers.length; i++) {
+                const question = questions[i];
+                const isYes = answers[i] === 0;  // 0 代表"是"，1 代表"否"
+                
+                // 根據問題類型和回答計算分數
+                switch (question.type) {
+                    case 'government_size':
+                        if (isYes) {
+                            traits.government_size += (question.poles[0] === "大政府" ? 1 : -1);
+                        } else {
+                            traits.government_size += (question.poles[1] === "大政府" ? 1 : -1);
+                        }
+                        dimensionCounts.government_size++;
+                        break;
+                    case 'equality':
+                        if (isYes) {
+                            traits.equality += (question.poles[0] === "平等" ? 1 : -1);
+                        } else {
+                            traits.equality += (question.poles[1] === "平等" ? 1 : -1);
+                        }
+                        dimensionCounts.equality++;
+                        break;
+                    case 'progress':
+                        if (isYes) {
+                            traits.progress += (question.poles[0] === "進取" ? 1 : -1);
+                        } else {
+                            traits.progress += (question.poles[1] === "進取" ? 1 : -1);
+                        }
+                        dimensionCounts.progress++;
+                        break;
+                    case 'responsibility':
+                        if (isYes) {
+                            traits.responsibility += (question.poles[0] === "個人責任" ? 1 : -1);
+                        } else {
+                            traits.responsibility += (question.poles[1] === "個人責任" ? 1 : -1);
+                        }
+                        dimensionCounts.responsibility++;
+                        break;
+                }
+            }
+
+            console.log('Raw scores:', traits);
+            console.log('Question counts per dimension:', dimensionCounts);
+
+            // 根據分數決定類型代碼（使用 0 作為分界點，因為奇數題目必定會有非零結果）
+            let type = '';
+            type += traits.government_size > 0 ? 'S' : 'L';  // Statist/Libertarian
+            type += traits.equality > 0 ? 'E' : 'F';         // Equality/Fairness
+            type += traits.progress > 0 ? 'A' : 'T';         // Ambitious/Traditional
+            type += traits.responsibility > 0 ? 'R' : 'C';   // Responsibility/Context
+
+            console.log('Final type:', type);
+            
+            // 在返回結果前添加調試輸出
+            console.log('Calculated type:', type);
+            console.log('Available types:', Object.keys(personalityTypes.types));
+            console.log('Found type data:', personalityTypes.types[type]);
+
+            return {
+                type: type,
+                scores: traits
+            };
+        }
+
+        // 顯示結果
+        function showResult() {
+            document.getElementById('startPage').style.display = 'none';
+            document.getElementById('questionPage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'block';
+            
+            const result = calculatePersonalityType();
+            const personalityType = personalityTypes.types[result.type];
+            
+            // 顯示結果
+            document.getElementById('result').textContent = 
+                `${result.type} - ${personalityType ? personalityType.name : '未知類型'}`;
+            
+            // 格式化描述文字
+            let description = '';
+            description += `【您的政治傾向】\n`;
+            description += `類型代碼：${result.type}\n`;
+            description += `類型名稱：${personalityType ? personalityType.name : '未知類型'}\n\n`;
+            
+            // 添加分數視覺化
+            const scoreDiv = document.createElement('div');
+            scoreDiv.className = 'score-bars';
+            
+            // 計算分數的絕對值總和，用於標準化
+            const maxScore = 3; // 每個維度有3題，最大分數為3
+
+            // 添加每個維度的分數條
+            const dimensions = [
+                { key: 'government_size', label: '政府規模', left: '大政府', right: '小政府' },
+                { key: 'equality', label: '平等程度', left: '平等', right: '公平' },
+                { key: 'progress', label: '進步程度', left: '進取', right: '保守' },
+                { key: 'responsibility', label: '責任歸屬', left: '個人', right: '環境' }
+            ];
+
+            dimensions.forEach(dim => {
+                const score = result.scores[dim.key];
+                // 計算指針位置：從-3到3映射到10%到90%（留出兩側空間）
+                const percentage = ((score + 3) / 6) * 80 + 10;
+                
+                const barContainer = document.createElement('div');
+                barContainer.className = 'score-bar-container';
+                barContainer.innerHTML = `
+                    <div class="score-label">
+                        <span>${dim.left}</span>
+                        <span>${dim.label} (${score})</span>
+                        <span>${dim.right}</span>
+                    </div>
+                    <div class="score-bar-wrapper">
+                        <div class="score-scale">
+                            ${Array(7).fill(0).map(() => '<div class="scale-mark"></div>').join('')}
+                        </div>
+                        <div class="score-pointer" style="left: ${percentage}%"></div>
+                    </div>
+                `;
+                scoreDiv.appendChild(barContainer);
+            });
+
+            // 插入分數視覺化到結果卡片中
+            const resultCard = document.querySelector('.result-card');
+            resultCard.insertBefore(scoreDiv, document.getElementById('resultDescription'));
+            
+            // 添加代碼說明
+            description += `【您的政治傾向分析】\n`;
+            description += `第一位 - ${result.type.charAt(0) === 'S' ? '大政府 (Statist)' : '小政府 (Libertarian)'}\n`;
+            description += `第二位 - ${result.type.charAt(1) === 'E' ? '平等導向 (Equality)' : '公平導向 (Fairness)'}\n`;
+            description += `第三位 - ${result.type.charAt(2) === 'A' ? '進取創新 (Ambitious)' : '保守傳統 (Traditional)'}\n`;
+            description += `第四位 - ${result.type.charAt(3) === 'R' ? '個人責任 (Responsibility)' : '環境責任 (Context)'}\n\n`;
+
+
+
+            if (personalityType) {
+                description += `【代表人物】\n`;
+                personalityType.examples.forEach(example => {
+                    description += `• ${example.name}\n`;
+                    description += `  ${example.work}\n\n`;
+                });
+            }
+            
+            document.getElementById('resultDescription').textContent = description;
+        }
+
+        // 重新開始測驗
+        function restartTest() {
+            currentQuestion = 0;
+            answers = [];
+            document.getElementById('startPage').style.display = 'block';
+            document.getElementById('questionPage').style.display = 'none';
+            document.getElementById('resultPage').style.display = 'none';
+        }
+
+        // 頁面載入時初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 不需要再載入外部檔案，直接啟用開始按鈕
+            const startButton = document.querySelector('#startPage button');
+            startButton.disabled = false;
+        });
+    </script>
+</body>
+</html>

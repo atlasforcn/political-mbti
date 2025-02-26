@@ -1,0 +1,306 @@
+body {
+    font-family: 'Noto Sans TC', sans-serif;
+    background-color: #f5f7fa;
+    color: #2d3748;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.btn {
+    padding: 10px 20px;
+    background-color: #0A84FF;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #2D7FF9;
+}
+
+.progress-section {
+    position: fixed;
+    bottom: 120px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    max-width: 600px;
+    padding: 0 20px;
+    z-index: 1000;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 20px;
+    background-color: #f0f0f0;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress {
+    height: 100%;
+    background: linear-gradient(90deg, #0A84FF, #2D7FF9);
+    border-radius: 8px;
+    transition: width 0.3s ease;
+}
+
+.option {
+    display: block;
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 2px solid #ccc;
+    border-radius: 10px;
+    background-color: white;
+    cursor: pointer;
+    text-align: left;
+}
+
+.option:hover {
+    border-color: #0A84FF;
+}
+
+.option.selected {
+    background-color: #0A84FF;
+    color: white;
+    border-color: #0A84FF;
+}
+
+.question-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    margin-bottom: 2rem;
+}
+
+.question-card {
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 15px;
+    padding: 30px;
+    margin-bottom: 60px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.question-text {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 20px;
+    text-align: center;
+    min-height: 4.8em;  /* 3行文字的高度 */
+    max-height: 4.8em;  /* 固定高度 */
+    display: block;     /* 改為 block 而不是 flex */
+    padding: 20px 10px; /* 上下加點間距 */
+    overflow-y: auto;   /* 如果內容超出則顯示捲軸 */
+    line-height: 1.6;   /* 行高 */
+}
+
+.options-container {
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    margin-top: 40px;
+    padding-bottom: 20px;
+}
+
+.navigation-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2rem;
+    gap: 1rem;
+}
+
+.result-container {
+    background-color: white;
+    padding: 2rem;
+    border-radius: 16px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.result-card {
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 15px;
+    padding: 30px;
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.result-title {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 24px;
+}
+
+.result-content {
+    font-size: 36px;
+    font-weight: bold;
+    color: #0A84FF;
+    margin: 20px 0;
+    padding: 15px;
+    border-radius: 10px;
+    background-color: #f8f8f8;
+}
+
+.result-description {
+    color: #666;
+    line-height: 1.8;
+    margin: 20px 0;
+    text-align: left;
+    font-size: 16px;
+    white-space: pre-line;
+}
+
+.restart-btn {
+    margin-top: 20px;
+    font-size: 16px;
+    padding: 12px 30px;
+}
+
+.start-content {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+    text-align: left;
+}
+
+.start-content h1 {
+    color: #0A84FF;
+    font-size: 32px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.intro-text {
+    font-size: 20px;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.notice-section, .why-section {
+    background-color: white;
+    border: 2px solid #ccc;
+    border-radius: 15px;
+    padding: 20px;
+    margin: 20px 0;
+}
+
+.notice-section h2, .why-section h2 {
+    color: #0A84FF;
+    font-size: 24px;
+    margin-bottom: 15px;
+}
+
+.why-section ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.why-section li {
+    margin: 10px 0;
+    line-height: 1.6;
+}
+
+.why-section strong {
+    color: #0A84FF;
+}
+
+.final-text {
+    font-size: 18px;
+    color: #333;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.start-btn {
+    display: block;
+    width: 200px;
+    margin: 30px auto;
+    padding: 15px 30px;
+    font-size: 18px;
+}
+
+@media (max-width: 640px) {
+    .container {
+        padding: 1rem;
+    }
+
+    .progress-section {
+        width: 95%;
+        padding: 1rem;
+    }
+}
+
+.score-bars {
+    margin: 20px 0;
+    padding: 15px;
+    background: #f8f8f8;
+    border-radius: 10px;
+}
+
+.score-bar-container {
+    margin: 15px 0;
+}
+
+.score-label {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+}
+
+.score-label span {
+    font-size: 14px;
+    color: #666;
+}
+
+.score-bar-wrapper {
+    width: 100%;
+    height: 24px;
+    background: #f0f0f0;
+    border-radius: 12px;
+    position: relative;
+    border: 2px solid #ccc;
+}
+
+.score-scale {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 10%;
+}
+
+.scale-mark {
+    width: 2px;
+    height: 12px;
+    background: #ccc;
+}
+
+.score-pointer {
+    position: absolute;
+    width: 4px;
+    height: 100%;
+    background-color: #0A84FF;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: left 0.5s ease;
+}
+
+// ... 其餘所有 CSS 內容 ... 

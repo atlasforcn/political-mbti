@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="用四條價值軸探索你的政治傾向。32 題、匿名、結果留在瀏覽器。">
+  <meta name="description" content="用四條價值軸探索你的政治傾向。32 題題庫平衡抽取 16 題，匿名作答。">
   <title>政見座標｜政治價值傾向測驗</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -26,8 +26,8 @@
         <h1>你的政治立場，<br><span>不只一條左右線。</span></h1>
         <p class="lede">從公共角色、分配原則、改革步調與責任歸因四條軸線，整理你面對公共議題時的價值選擇。</p>
         <div class="intro-actions">
-          <button class="primary-button" id="startButton" type="button">開始 32 題測驗 <span aria-hidden="true">→</span></button>
-          <p>約 5–7 分鐘 · 不蒐集個資 · 可隨時返回</p>
+          <button class="primary-button" id="startButton" type="button">開始 16 題測驗 <span aria-hidden="true">→</span></button>
+          <p>32 題題庫平衡抽題 · 約 3–5 分鐘 · 可隨時返回</p>
         </div>
       </div>
       <div class="axis-preview" aria-label="四條測量軸線">
@@ -45,7 +45,7 @@
       <div class="quiz-meta">
         <div>
           <p class="kicker" id="dimensionLabel">公共角色</p>
-          <p class="question-count"><span id="questionNumber">01</span> / <span id="questionTotal">32</span></p>
+          <p class="question-count"><span id="questionNumber">01</span> / <span id="questionTotal">16</span></p>
         </div>
         <button class="icon-button" id="closeButton" type="button" aria-label="暫停並回到首頁" title="暫停並回到首頁">×</button>
       </div>
@@ -96,7 +96,7 @@
     <div class="method-content">
       <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依台灣語境重新撰寫；沒有直接複製受版權保護的題組。</p>
       <h3>計分方式</h3>
-      <p>每題使用五點量表。各軸包含正、反向各四題，先反向計分，再換算為 0–100。16 型代碼只是易讀摘要，連續分數才是主要結果。</p>
+      <p>每次從 32 題題庫抽出 16 題；每軸固定抽 4 題，正、反向各 2 題。作答使用五點量表，先反向計分，再換算為 0–100。16 型代碼只是易讀摘要，連續分數才是主要結果。</p>
       <h3>重要限制</h3>
       <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
       <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>
@@ -107,6 +107,7 @@
   <script src="questions.js"></script>
   <script src="personality-types.js"></script>
   <script src="scoring.js"></script>
+  <script src="quiz-session.js"></script>
   <script src="app.js"></script>
 </body>
 </html>

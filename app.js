@@ -2,10 +2,11 @@
   "use strict";
   const bank = window.QUESTION_BANK;
   const scoring = window.PoliticalScoring;
+  const quizSession = window.QuizSession;
   const types = window.PERSONALITY_TYPES;
   const storageKey = "political-values-v2";
   const labels = ["非常不同意", "不同意", "中立／不確定", "同意", "非常同意"];
-  const state = { current: 0, answers: Array(bank.questions.length).fill(null) };
+  const state = { current: 0, questions: [], answers: [] };
 
   const $ = function (id) { return document.getElementById(id); };
   const screens = [$("introScreen"), $("quizScreen"), $("resultScreen")];
@@ -16,28 +17,40 @@
   }
 
   function saveProgress() {
-    localStorage.setItem(storageKey, JSON.stringify({ current: state.current, answers: state.answers }));
+    localStorage.setItem(storageKey, JSON.stringify({
+      current: state.current,
+      questionIds: state.questions.map(function (question) { return question.id; }),
+      answers: state.answers
+    }));
+  }
+
+  function createSession() {
+    state.current = 0;
+    state.questions = quizSession.selectBalancedQuestions(bank.questions, bank.dimensions);
+    state.answers = Array(state.questions.length).fill(null);
   }
 
   function restoreProgress() {
     try {
       const saved = JSON.parse(localStorage.getItem(storageKey));
-      if (!saved || !Array.isArray(saved.answers) || saved.answers.length !== state.answers.length) return false;
-      saved.answers.forEach(function (value, index) { state.answers[index] = value; });
-      state.current = Math.min(Math.max(saved.current || 0, 0), bank.questions.length - 1);
+      const restoredQuestions = quizSession.restoreQuestions(saved && saved.questionIds, bank.questions);
+      if (!restoredQuestions || !Array.isArray(saved.answers) || saved.answers.length !== restoredQuestions.length) return false;
+      state.questions = restoredQuestions;
+      state.answers = saved.answers.slice();
+      state.current = Math.min(Math.max(saved.current || 0, 0), state.questions.length - 1);
       return state.answers.some(function (answer) { return answer !== null; });
     } catch (_) { return false; }
   }
 
   function renderQuestion() {
-    const question = bank.questions[state.current];
+    const question = state.questions[state.current];
     const dimension = bank.dimensions[question.dimension];
     $("dimensionLabel").textContent = dimension.label;
     $("topicLabel").textContent = question.topic;
     $("questionText").textContent = question.text;
     $("questionNumber").textContent = String(state.current + 1).padStart(2, "0");
-    $("questionTotal").textContent = bank.questions.length;
-    $("progressBar").style.width = ((state.current + 1) / bank.questions.length * 100) + "%";
+    $("questionTotal").textContent = state.questions.length;
+    $("progressBar").style.width = ((state.current + 1) / state.questions.length * 100) + "%";
     $("backButton").disabled = state.current === 0;
     $("answerScale").innerHTML = "<legend class=\"sr-only\">選擇同意程度</legend>";
 
@@ -55,14 +68,14 @@
   function answerQuestion(value) {
     state.answers[state.current] = value;
     saveProgress();
-    if (state.current < bank.questions.length - 1) {
+    if (state.current < state.questions.length - 1) {
       state.current += 1;
       setTimeout(renderQuestion, 120);
     } else renderResult();
   }
 
   function renderResult() {
-    const result = scoring.scoreQuiz(bank.questions, state.answers, bank.dimensions);
+    const result = scoring.scoreQuiz(state.questions, state.answers, bank.dimensions);
     const profile = types[result.type];
     $("resultCode").textContent = result.type;
     $("resultName").textContent = profile.name;
@@ -87,9 +100,9 @@
 
   function start() {
     const hasProgress = restoreProgress();
+    if (!hasProgress) createSession();
     if (hasProgress && !window.confirm("偵測到未完成的測驗，要從上次進度繼續嗎？\n按「取消」會重新開始。")) {
-      state.current = 0;
-      state.answers.fill(null);
+      createSession();
       localStorage.removeItem(storageKey);
     }
     renderQuestion();
@@ -97,8 +110,7 @@
   }
 
   function restart() {
-    state.current = 0;
-    state.answers.fill(null);
+    createSession();
     localStorage.removeItem(storageKey);
     renderQuestion();
     showScreen($("quizScreen"));

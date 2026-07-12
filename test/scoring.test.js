@@ -2,6 +2,7 @@ const test = require("node:test");
 const assert = require("node:assert/strict");
 const bank = require("../questions.js");
 const { scoreQuiz, validate } = require("../scoring.js");
+const { selectBalancedQuestions, restoreQuestions } = require("../quiz-session.js");
 
 test("題庫每軸各有八題且正反向平衡", () => {
   Object.keys(bank.dimensions).forEach((dimension) => {
@@ -11,6 +12,25 @@ test("題庫每軸各有八題且正反向平衡", () => {
     assert.equal(items.filter((item) => item.direction === -1).length, 4);
   });
   assert.equal(new Set(bank.questions.map((question) => question.id)).size, bank.questions.length);
+});
+
+test("每次從 32 題平衡抽出 16 題", () => {
+  const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.42);
+  assert.equal(selected.length, 16);
+  assert.equal(new Set(selected.map((question) => question.id)).size, 16);
+  Object.keys(bank.dimensions).forEach((dimension) => {
+    const items = selected.filter((question) => question.dimension === dimension);
+    assert.equal(items.length, 4);
+    assert.equal(items.filter((item) => item.direction === 1).length, 2);
+    assert.equal(items.filter((item) => item.direction === -1).length, 2);
+  });
+});
+
+test("續測能以題號還原同一組題目與順序", () => {
+  const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.24);
+  const restored = restoreQuestions(selected.map((question) => question.id), bank.questions);
+  assert.deepEqual(restored.map((question) => question.id), selected.map((question) => question.id));
+  assert.equal(restoreQuestions(["missing"], bank.questions), null);
 });
 
 test("中立答案落在四軸中線", () => {

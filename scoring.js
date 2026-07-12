@@ -16,27 +16,33 @@
   function scoreQuiz(questions, answers, dimensions) {
     validate(questions, answers);
     const buckets = {};
-    Object.keys(dimensions).forEach(function (key) { buckets[key] = []; });
+    const itemCounts = {};
+    Object.keys(dimensions).forEach(function (key) { buckets[key] = []; itemCounts[key] = 0; });
 
     questions.forEach(function (question, index) {
       if (!buckets[question.dimension]) throw new Error("未知的測量軸：" + question.dimension);
+      itemCounts[question.dimension] += 1;
       const centered = answers[index] - 3;
-      buckets[question.dimension].push(centered * question.direction);
+      if (centered !== 0) buckets[question.dimension].push(centered * question.direction);
     });
 
     const scores = {};
     let type = "";
     Object.keys(dimensions).forEach(function (key) {
       const values = buckets[key];
-      if (!values.length) throw new Error("測量軸沒有題目：" + key);
-      const mean = values.reduce(function (sum, value) { return sum + value; }, 0) / values.length;
+      if (!itemCounts[key]) throw new Error("測量軸沒有題目：" + key);
+      const mean = values.length ? values.reduce(function (sum, value) { return sum + value; }, 0) / values.length : 0;
       const leftPercentage = Math.round(((mean + 2) / 4) * 100);
+      const distance = Math.abs(leftPercentage - 50);
       const meta = dimensions[key];
       scores[key] = {
         leftPercentage,
         rightPercentage: 100 - leftPercentage,
-        balance: Math.abs(leftPercentage - 50) <= 6,
-        itemCount: values.length
+        balance: distance <= 6,
+        strength: distance >= 25 ? "明顯" : distance >= 13 ? "中度" : "輕微",
+        insufficient: values.length < 2,
+        answeredCount: values.length,
+        itemCount: itemCounts[key]
       };
       type += leftPercentage >= 50 ? meta.leftCode : meta.rightCode;
     });

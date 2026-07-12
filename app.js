@@ -5,7 +5,13 @@
   const quizSession = window.QuizSession;
   const types = window.PERSONALITY_TYPES;
   const storageKey = "political-values-v2";
-  const labels = ["非常不同意", "不同意", "中立／不確定", "同意", "非常同意"];
+  const options = [
+    { value: 1, label: "非常不同意" },
+    { value: 2, label: "比較不同意" },
+    { value: 4, label: "比較同意" },
+    { value: 5, label: "非常同意" },
+    { value: 3, label: "不確定／不計分", uncertain: true }
+  ];
   const state = { current: 0, questions: [], answers: [] };
 
   const $ = function (id) { return document.getElementById(id); };
@@ -54,12 +60,12 @@
     $("backButton").disabled = state.current === 0;
     $("answerScale").innerHTML = "<legend class=\"sr-only\">選擇同意程度</legend>";
 
-    labels.forEach(function (label, index) {
-      const value = index + 1;
+    options.forEach(function (option, index) {
+      const value = option.value;
       const button = document.createElement("button");
       button.type = "button";
-      button.className = "answer-button" + (state.answers[state.current] === value ? " is-selected" : "");
-      button.innerHTML = "<span class=\"answer-key\">" + value + "</span><span>" + label + "</span>";
+      button.className = "answer-button" + (option.uncertain ? " is-uncertain" : "") + (state.answers[state.current] === value ? " is-selected" : "");
+      button.innerHTML = "<span class=\"answer-key\">" + (index + 1) + "</span><span>" + option.label + "</span>";
       button.addEventListener("click", function () { answerQuestion(value); });
       $("answerScale").appendChild(button);
     });
@@ -87,8 +93,9 @@
       const score = result.scores[key];
       const row = document.createElement("div");
       row.className = "axis-row";
+      const reading = score.insufficient ? "資料不足" : score.balance ? "拉鋸中" : score.strength + "傾向「" + (score.leftPercentage >= 50 ? meta.left : meta.right) + "」";
       row.innerHTML =
-        "<div class=\"axis-meta\"><b>" + meta.label + "</b><span>" + (score.balance ? "接近中線" : "傾向「" + (score.leftPercentage >= 50 ? meta.left : meta.right) + "」") + "</span></div>" +
+        "<div class=\"axis-meta\"><b>" + meta.label + "</b><span>" + reading + " · 有效 " + score.answeredCount + "/" + score.itemCount + " 題</span></div>" +
         "<div class=\"axis-labels\"><span>" + meta.left + " <b>" + score.leftPercentage + "</b></span><span><b>" + score.rightPercentage + "</b> " + meta.right + "</span></div>" +
         "<div class=\"axis-track\"><span style=\"width:" + score.leftPercentage + "%\"></span><i style=\"left:" + score.leftPercentage + "%\"></i></div>";
       $("axisResults").appendChild(row);
@@ -145,8 +152,8 @@
   $("methodDialog").addEventListener("click", function (event) { if (event.target === $("methodDialog")) $("methodDialog").close(); });
   window.addEventListener("keydown", function (event) {
     if (!$("quizScreen").classList.contains("is-active")) return;
-    const value = Number(event.key);
-    if (value >= 1 && value <= 5) answerQuestion(value);
+    const optionIndex = Number(event.key) - 1;
+    if (optionIndex >= 0 && optionIndex < options.length) answerQuestion(options[optionIndex].value);
     if (event.key === "ArrowLeft" && state.current > 0) { state.current -= 1; saveProgress(); renderQuestion(); }
   });
 })();

@@ -39,6 +39,8 @@ test("中立答案落在四軸中線", () => {
   Object.values(result.scores).forEach((score) => {
     assert.equal(score.leftPercentage, 50);
     assert.equal(score.balance, true);
+    assert.equal(score.answeredCount, 0);
+    assert.equal(score.insufficient, true);
   });
 });
 
@@ -58,4 +60,15 @@ test("一致同意正反向平衡題目不會製造假傾向", () => {
 test("拒絕缺漏與超出量表的答案", () => {
   assert.throws(() => validate(bank.questions, [3]), /數量/);
   assert.throws(() => validate(bank.questions, bank.questions.map(() => 6)), /1 到 5/);
+});
+
+test("不確定答案不會稀釋其他有效答案", () => {
+  const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.31);
+  const answers = selected.map((question, index) => index % 4 === 0 ? (question.direction === 1 ? 5 : 1) : 3);
+  const result = scoreQuiz(selected, answers, bank.dimensions);
+  Object.values(result.scores).forEach((score) => {
+    assert.equal(score.leftPercentage, 100);
+    assert.equal(score.answeredCount, 1);
+    assert.equal(score.insufficient, true);
+  });
 });

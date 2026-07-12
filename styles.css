@@ -102,6 +102,8 @@ main { min-height: calc(100vh - 76px); }
 .answer-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 0; padding: 0; border: 0; }
 .answer-button { min-width: 0; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 13px; border: 1px solid var(--ink); border-radius: 4px; background: var(--surface); cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; transition: transform .15s, background .15s, color .15s; }
 .answer-button:hover, .answer-button.is-selected { transform: translateY(-4px); background: var(--green); color: white; box-shadow: 4px 4px 0 var(--ink); }
+.answer-button.is-uncertain { border-style: dashed; color: var(--muted); }
+.answer-button.is-uncertain:hover, .answer-button.is-uncertain.is-selected { background: var(--ink); color: white; }
 .answer-key { display: grid; place-items: center; width: 25px; height: 25px; border: 1px solid currentColor; border-radius: 50%; font-size: 11px; }
 .quiz-nav { display: flex; justify-content: space-between; align-items: center; margin-top: 30px; color: var(--muted); font-size: 12px; }
 

@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="用四條價值軸探索你的政治傾向。32 題、匿名、結果留在瀏覽器。">
+  <title>政見座標｜政治價值傾向測驗</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="政見座標首頁">
+      <span class="brand-mark" aria-hidden="true">政</span>
+      <span>政見座標</span>
+    </a>
+    <button class="text-button" id="methodButton" type="button">方法說明</button>
+  </header>
+
+  <main>
+    <section class="screen intro-screen is-active" id="introScreen">
+      <div class="intro-copy">
+        <p class="kicker">POLITICAL VALUES · TAIWAN</p>
+        <h1>你的政治立場，<br><span>不只一條左右線。</span></h1>
+        <p class="lede">從公共角色、分配原則、改革步調與責任歸因四條軸線，整理你面對公共議題時的價值選擇。</p>
+        <div class="intro-actions">
+          <button class="primary-button" id="startButton" type="button">開始 32 題測驗 <span aria-hidden="true">→</span></button>
+          <p>約 5–7 分鐘 · 不蒐集個資 · 可隨時返回</p>
+        </div>
+      </div>
+      <div class="axis-preview" aria-label="四條測量軸線">
+        <p class="preview-label">本測驗觀察的四組張力</p>
+        <div class="preview-row"><b>公共保障</b><span></span><b>市場自治</b></div>
+        <div class="preview-row"><b>結果平等</b><span></span><b>程序公平</b></div>
+        <div class="preview-row"><b>積極改革</b><span></span><b>穩健漸進</b></div>
+        <div class="preview-row"><b>個人能動</b><span></span><b>結構脈絡</b></div>
+        <p class="preview-note">這是探索工具，不是政黨配對，也不是心理診斷。</p>
+      </div>
+      <div class="intro-index" aria-hidden="true">01—04</div>
+    </section>
+
+    <section class="screen quiz-screen" id="quizScreen" aria-live="polite">
+      <div class="quiz-meta">
+        <div>
+          <p class="kicker" id="dimensionLabel">公共角色</p>
+          <p class="question-count"><span id="questionNumber">01</span> / <span id="questionTotal">32</span></p>
+        </div>
+        <button class="icon-button" id="closeButton" type="button" aria-label="暫停並回到首頁" title="暫停並回到首頁">×</button>
+      </div>
+      <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+      <article class="question-panel">
+        <p class="topic" id="topicLabel">社會安全</p>
+        <h2 id="questionText"></h2>
+        <fieldset class="answer-scale" id="answerScale">
+          <legend class="sr-only">選擇同意程度</legend>
+        </fieldset>
+        <div class="quiz-nav">
+          <button class="secondary-button" id="backButton" type="button">← 上一題</button>
+          <span>按 1–5 也能作答</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="screen result-screen" id="resultScreen">
+      <div class="result-heading">
+        <p class="kicker">YOUR VALUE PROFILE</p>
+        <p class="result-code" id="resultCode">SEAC</p>
+        <h1 id="resultName">公共改革協作者</h1>
+        <p id="resultSummary"></p>
+      </div>
+      <div class="result-grid">
+        <section class="axis-results" aria-labelledby="axisTitle">
+          <div class="section-heading"><h2 id="axisTitle">四軸座標</h2><span>50 為中線</span></div>
+          <div id="axisResults"></div>
+        </section>
+        <aside class="result-notes">
+          <p class="note-number">16 / TYPES</p>
+          <h2>怎麼閱讀？</h2>
+          <p>代碼記錄每條軸較接近的一端；長條則保留你的連續位置。接近 50 時，代表這一軸較平衡，不宜過度解讀字母。</p>
+          <div class="result-actions">
+            <button class="primary-button" id="shareButton" type="button">複製結果摘要</button>
+            <button class="secondary-button" id="restartButton" type="button">重新測驗</button>
+          </div>
+        </aside>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="methodDialog">
+    <div class="dialog-header">
+      <div><p class="kicker">METHODOLOGY</p><h2>方法與限制</h2></div>
+      <button class="icon-button" id="closeMethodButton" type="button" aria-label="關閉方法說明">×</button>
+    </div>
+    <div class="method-content">
+      <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依台灣語境重新撰寫；沒有直接複製受版權保護的題組。</p>
+      <h3>計分方式</h3>
+      <p>每題使用五點量表。各軸包含正、反向各四題，先反向計分，再換算為 0–100。16 型代碼只是易讀摘要，連續分數才是主要結果。</p>
+      <h3>重要限制</h3>
+      <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
+      <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="questions.js"></script>
+  <script src="personality-types.js"></script>
+  <script src="scoring.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

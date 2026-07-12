@@ -1,0 +1,41 @@
+const test = require("node:test");
+const assert = require("node:assert/strict");
+const bank = require("../questions.js");
+const { scoreQuiz, validate } = require("../scoring.js");
+
+test("題庫每軸各有八題且正反向平衡", () => {
+  Object.keys(bank.dimensions).forEach((dimension) => {
+    const items = bank.questions.filter((question) => question.dimension === dimension);
+    assert.equal(items.length, 8);
+    assert.equal(items.filter((item) => item.direction === 1).length, 4);
+    assert.equal(items.filter((item) => item.direction === -1).length, 4);
+  });
+  assert.equal(new Set(bank.questions.map((question) => question.id)).size, bank.questions.length);
+});
+
+test("中立答案落在四軸中線", () => {
+  const result = scoreQuiz(bank.questions, bank.questions.map(() => 3), bank.dimensions);
+  assert.equal(result.type, "SEAR");
+  Object.values(result.scores).forEach((score) => {
+    assert.equal(score.leftPercentage, 50);
+    assert.equal(score.balance, true);
+  });
+});
+
+test("依題目方向作答可到達兩端", () => {
+  const left = bank.questions.map((question) => question.direction === 1 ? 5 : 1);
+  const right = bank.questions.map((question) => question.direction === 1 ? 1 : 5);
+  assert.equal(scoreQuiz(bank.questions, left, bank.dimensions).type, "SEAR");
+  assert.equal(scoreQuiz(bank.questions, right, bank.dimensions).type, "LFTC");
+  Object.values(scoreQuiz(bank.questions, left, bank.dimensions).scores).forEach((score) => assert.equal(score.leftPercentage, 100));
+});
+
+test("一致同意正反向平衡題目不會製造假傾向", () => {
+  const result = scoreQuiz(bank.questions, bank.questions.map(() => 4), bank.dimensions);
+  Object.values(result.scores).forEach((score) => assert.equal(score.leftPercentage, 50));
+});
+
+test("拒絕缺漏與超出量表的答案", () => {
+  assert.throws(() => validate(bank.questions, [3]), /數量/);
+  assert.throws(() => validate(bank.questions, bank.questions.map(() => 6)), /1 到 5/);
+});

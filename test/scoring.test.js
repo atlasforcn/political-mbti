@@ -24,6 +24,29 @@ test("每次從 32 題平衡抽出 16 題", () => {
     assert.equal(items.filter((item) => item.direction === 1).length, 2);
     assert.equal(items.filter((item) => item.direction === -1).length, 2);
   });
+  const roleItems = selected.filter((question) => question.dimension === "role");
+  ["social", "economy"].forEach((facet) => {
+    const items = roleItems.filter((question) => question.facet === facet);
+    assert.equal(items.length, 2);
+    assert.equal(items.filter((item) => item.direction === 1).length, 1);
+    assert.equal(items.filter((item) => item.direction === -1).length, 1);
+  });
+});
+
+test("政府邊界能保留跨議題的大小政府矛盾", () => {
+  const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.42);
+  const answers = selected.map((question) => {
+    if (question.dimension !== "role") return 3;
+    const chooseLeft = question.facet === "social";
+    return chooseLeft === (question.direction === 1) ? 5 : 1;
+  });
+  const result = scoreQuiz(selected, answers, bank.dimensions);
+  assert.equal(result.scores.role.leftPercentage, 50);
+  assert.equal(result.governmentProfile.social.leftPercentage, 100);
+  assert.equal(result.governmentProfile.economy.leftPercentage, 0);
+  assert.equal(result.governmentProfile.gap, 100);
+  assert.equal(result.governmentProfile.kind, "social_public_economy_market");
+  assert.equal(result.governmentProfile.selective, true);
 });
 
 test("續測能以題號還原同一組題目與順序", () => {

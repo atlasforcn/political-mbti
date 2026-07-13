@@ -126,6 +126,22 @@ main { min-height: calc(100vh - 76px); }
 .axis-track { height: 10px; position: relative; background: var(--yellow); }
 .axis-track span { display: block; height: 100%; background: var(--green); }
 .axis-track i { position: absolute; top: -5px; width: 2px; height: 20px; background: var(--ink); transform: translateX(-1px); }
+.government-profile { margin-top: 42px; padding: 28px; border: 1px solid var(--ink); background: var(--surface); box-shadow: 6px 6px 0 var(--ink); }
+.government-profile.is-selective { border-color: var(--coral); box-shadow: 6px 6px 0 var(--coral); }
+.government-heading, .facet-meta { display: flex; justify-content: space-between; gap: 18px; align-items: flex-end; }
+.government-heading .kicker { margin-bottom: 7px; }
+.government-heading h2 { margin: 0; font: 900 25px var(--serif); }
+.government-heading > span { color: var(--coral); font-size: 12px; font-weight: 800; }
+.government-reading { margin: 24px 0 20px; padding: 18px 20px; background: var(--ink); color: white; }
+.government-reading strong { color: var(--yellow); font: 900 20px var(--serif); }
+.government-reading p { margin: 8px 0 0; color: #dce3de; font-size: 13px; line-height: 1.8; }
+.facet-row { padding: 17px 0 5px; }
+.facet-meta { align-items: baseline; margin-bottom: 9px; }
+.facet-meta span { color: var(--muted); font-size: 12px; }
+.facet-meta strong { color: var(--ink); font-size: 18px; }
+.facet-track { position: relative; height: 8px; background: var(--yellow); }
+.facet-track span { display: block; height: 100%; background: var(--green); }
+.facet-track i { position: absolute; top: -4px; width: 2px; height: 16px; background: var(--coral); transform: translateX(-1px); }
 .result-notes { padding: 46px 0 48px 42px; }
 .result-notes > p { line-height: 1.85; }
 .note-number { color: var(--coral); font-size: 12px; font-weight: 800; letter-spacing: 1.2px; }
@@ -160,6 +176,8 @@ dialog::backdrop { background: rgba(23, 34, 29, .72); }
   .result-heading h1 { margin: 12px 0 18px; }
   .result-grid { grid-template-columns: 1fr; }
   .axis-results { padding-right: 0; border-right: 0; }
+  .government-profile { padding: 22px 18px; }
+  .government-heading, .facet-meta { align-items: flex-start; flex-direction: column; gap: 5px; }
   .result-notes { padding: 36px 0; border-top: 1px solid var(--ink); }
 }
 

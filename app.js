@@ -4,7 +4,7 @@
   const scoring = window.PoliticalScoring;
   const quizSession = window.QuizSession;
   const types = window.PERSONALITY_TYPES;
-  const storageKey = "political-values-v2";
+  const storageKey = "political-values-v2.1";
   const options = [
     { value: 1, label: "非常不同意" },
     { value: 2, label: "比較不同意" },
@@ -100,9 +100,32 @@
         "<div class=\"axis-track\"><span style=\"width:" + score.leftPercentage + "%\"></span><i style=\"left:" + score.leftPercentage + "%\"></i></div>";
       $("axisResults").appendChild(row);
     });
+    renderGovernmentProfile(result.governmentProfile);
     localStorage.removeItem(storageKey);
     state.lastResult = result;
     showScreen($("resultScreen"));
+  }
+
+  function renderGovernmentProfile(profile) {
+    const copy = {
+      social_public_economy_market: ["選擇性政府", "社會保障偏向共同承擔，經濟治理則偏向市場放手。你不是單純支持大政府或小政府，而是依議題劃出不同邊界。"],
+      social_private_economy_public: ["選擇性政府", "社會保障偏向個人選擇，經濟治理卻接受較多公共介入。你對政府大小的判準會隨議題改變。"],
+      broad_public: ["廣泛公共介入", "在社會保障與經濟治理上，你都較願意讓政府承擔責任。"],
+      limited_public: ["廣泛政府克制", "在社會保障與經濟治理上，你都較傾向保留個人或市場空間。"],
+      mixed: ["邊界仍在拉鋸", "兩類議題尚未形成清楚而一致的政府邊界。比起單一標籤，你的個別題目選擇更值得細看。"],
+      insufficient: ["資料不足", "其中一類題目有太多「不確定」，暫時無法判斷你是否會依議題改變政府邊界。"]
+    };
+    const message = copy[profile.kind];
+    $("governmentProfile").classList.toggle("is-selective", profile.selective);
+    $("governmentReading").textContent = message[0];
+    $("governmentSummary").textContent = message[1];
+    $("governmentGap").textContent = profile.sufficient ? "兩類落差 " + profile.gap + " 點" : "有效回答不足";
+    ["social", "economy"].forEach(function (key) {
+      const score = profile[key];
+      $(key + "GovernmentValue").textContent = score.leftPercentage;
+      $(key + "GovernmentBar").style.width = score.leftPercentage + "%";
+      $(key + "GovernmentMarker").style.left = score.leftPercentage + "%";
+    });
   }
 
   function start() {
@@ -138,6 +161,9 @@
       const score = result.scores[key];
       lines.push(meta.left + " " + score.leftPercentage + "｜" + score.rightPercentage + " " + meta.right);
     });
+    if (result.governmentProfile && result.governmentProfile.sufficient) {
+      lines.push("政府邊界：社會保障 " + result.governmentProfile.social.leftPercentage + "｜經濟治理 " + result.governmentProfile.economy.leftPercentage + "（落差 " + result.governmentProfile.gap + "）");
+    }
     lines.push("這是價值探索工具，不是政黨配對或心理診斷。", location.href);
     navigator.clipboard.writeText(lines.join("\n")).then(function () { showToast("結果摘要已複製"); }).catch(function () { showToast("無法複製，請檢查瀏覽器權限"); });
   }

@@ -20,6 +20,19 @@
     const rng = random || Math.random;
     const selection = [];
     Object.keys(dimensions).forEach(function (dimension) {
+      const facets = dimensions[dimension].facets;
+      if (facets) {
+        Object.keys(facets).forEach(function (facet) {
+          [1, -1].forEach(function (direction) {
+            const candidates = questions.filter(function (question) {
+              return question.dimension === dimension && question.facet === facet && question.direction === direction;
+            });
+            if (!candidates.length) throw new Error("每個議題剖面與方向至少需要一題：" + dimension + "/" + facet);
+            selection.push(shuffle(candidates, rng)[0]);
+          });
+        });
+        return;
+      }
       [1, -1].forEach(function (direction) {
         const candidates = questions.filter(function (question) {
           return question.dimension === dimension && question.direction === direction;

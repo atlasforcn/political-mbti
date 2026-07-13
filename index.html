@@ -74,11 +74,29 @@
         <section class="axis-results" aria-labelledby="axisTitle">
           <div class="section-heading"><h2 id="axisTitle">四軸座標</h2><span>50 為中線</span></div>
           <div id="axisResults"></div>
+          <section class="government-profile" id="governmentProfile" aria-labelledby="governmentTitle">
+            <div class="government-heading">
+              <div><p class="kicker">ISSUE DEPENDENT</p><h2 id="governmentTitle">你的政府邊界</h2></div>
+              <span id="governmentGap">兩類落差 0 點</span>
+            </div>
+            <div class="government-reading">
+              <strong id="governmentReading">邊界仍在拉鋸</strong>
+              <p id="governmentSummary"></p>
+            </div>
+            <div class="facet-row">
+              <div class="facet-meta"><b>社會保障</b><span>共同承擔 <strong id="socialGovernmentValue">50</strong> / 個人選擇</span></div>
+              <div class="facet-track"><span id="socialGovernmentBar"></span><i id="socialGovernmentMarker"></i></div>
+            </div>
+            <div class="facet-row">
+              <div class="facet-meta"><b>經濟治理</b><span>公共介入 <strong id="economyGovernmentValue">50</strong> / 市場放手</span></div>
+              <div class="facet-track"><span id="economyGovernmentBar"></span><i id="economyGovernmentMarker"></i></div>
+            </div>
+          </section>
         </section>
         <aside class="result-notes">
           <p class="note-number">16 / TYPES</p>
           <h2>怎麼閱讀？</h2>
-        <p>代碼記錄每條軸較接近的一端；長條保留連續位置。結果同時顯示傾向強度與有效題數，回答「不確定」的題目不參與計分。</p>
+        <p>代碼記錄每條軸較接近的一端；長條保留連續位置。「政府邊界」不另加一個人格字母，而是比較你在社會保障與經濟治理上的選擇，讓議題間的矛盾不被平均掉。</p>
           <div class="result-actions">
             <button class="primary-button" id="shareButton" type="button">複製結果摘要</button>
             <button class="secondary-button" id="restartButton" type="button">重新測驗</button>
@@ -96,7 +114,7 @@
     <div class="method-content">
       <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依台灣語境重新撰寫；沒有直接複製受版權保護的題組。</p>
       <h3>計分方式</h3>
-      <p>每次從 32 題題庫抽出 16 題；每軸固定抽 4 題，正、反向各 2 題。四個主要選項要求表達方向；「不確定」不參與計分。答案先反向計分，再換算為 0–100。</p>
+      <p>每次從 32 題題庫抽出 16 題；每軸固定抽 4 題，正、反向各 2 題。公共角色軸還會固定涵蓋社會保障與經濟治理兩類，以比較受測者是否依議題採取不同的政府邊界。四個主要選項要求表達方向；「不確定」不參與計分。</p>
       <h3>重要限制</h3>
       <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
       <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>

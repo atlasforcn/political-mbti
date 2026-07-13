@@ -19,11 +19,24 @@
     const itemCounts = {};
     Object.keys(dimensions).forEach(function (key) { buckets[key] = []; itemCounts[key] = 0; });
 
+    const facetBuckets = {};
+    Object.keys(dimensions).forEach(function (key) {
+      if (!dimensions[key].facets) return;
+      facetBuckets[key] = {};
+      Object.keys(dimensions[key].facets).forEach(function (facet) { facetBuckets[key][facet] = []; });
+    });
+
     questions.forEach(function (question, index) {
       if (!buckets[question.dimension]) throw new Error("未知的測量軸：" + question.dimension);
       itemCounts[question.dimension] += 1;
       const centered = answers[index] - 3;
-      if (centered !== 0) buckets[question.dimension].push(centered * question.direction);
+      if (centered !== 0) {
+        const directionalValue = centered * question.direction;
+        buckets[question.dimension].push(directionalValue);
+        if (question.facet && facetBuckets[question.dimension] && facetBuckets[question.dimension][question.facet]) {
+          facetBuckets[question.dimension][question.facet].push(directionalValue);
+        }
+      }
     });
 
     const scores = {};
@@ -46,7 +59,27 @@
       };
       type += leftPercentage >= 50 ? meta.leftCode : meta.rightCode;
     });
-    return { type, scores };
+    const roleFacets = facetBuckets.role;
+    let governmentProfile = null;
+    if (roleFacets) {
+      const facetScore = function (key) {
+        const values = roleFacets[key];
+        const mean = values.length ? values.reduce(function (sum, value) { return sum + value; }, 0) / values.length : 0;
+        return { leftPercentage: Math.round(((mean + 2) / 4) * 100), answeredCount: values.length, sufficient: values.length >= 2 };
+      };
+      const social = facetScore("social");
+      const economy = facetScore("economy");
+      const sufficient = social.sufficient && economy.sufficient;
+      const gap = Math.abs(social.leftPercentage - economy.leftPercentage);
+      let kind = "mixed";
+      if (!sufficient) kind = "insufficient";
+      else if (social.leftPercentage >= 57 && economy.leftPercentage <= 43) kind = "social_public_economy_market";
+      else if (social.leftPercentage <= 43 && economy.leftPercentage >= 57) kind = "social_private_economy_public";
+      else if (social.leftPercentage >= 57 && economy.leftPercentage >= 57) kind = "broad_public";
+      else if (social.leftPercentage <= 43 && economy.leftPercentage <= 43) kind = "limited_public";
+      governmentProfile = { social, economy, gap, selective: kind.indexOf("social_") === 0, kind, sufficient };
+    }
+    return { type, scores, governmentProfile };
   }
 
   return { scoreQuiz, validate };

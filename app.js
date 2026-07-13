@@ -122,7 +122,8 @@
     $("governmentGap").textContent = profile.sufficient ? "兩類落差 " + profile.gap + " 點" : "有效回答不足";
     ["social", "economy"].forEach(function (key) {
       const score = profile[key];
-      $(key + "GovernmentValue").textContent = score.leftPercentage;
+      $(key + "GovernmentLeftValue").textContent = score.leftPercentage;
+      $(key + "GovernmentRightValue").textContent = 100 - score.leftPercentage;
       $(key + "GovernmentBar").style.width = score.leftPercentage + "%";
       $(key + "GovernmentMarker").style.left = score.leftPercentage + "%";
     });

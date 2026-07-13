@@ -21,25 +21,35 @@
     const selection = [];
     Object.keys(dimensions).forEach(function (dimension) {
       const facets = dimensions[dimension].facets;
+      const dimensionItems = questions.filter(function (question) { return question.dimension === dimension; });
+      const issueKeys = Array.from(new Set(dimensionItems.map(function (question) { return question.issue; })));
+      if (issueKeys.length !== 4 || issueKeys.some(function (issue) { return !issue; })) {
+        throw new Error("每個測量軸必須定義四個議題：" + dimension);
+      }
+
+      function pick(issue, direction) {
+        const candidates = dimensionItems.filter(function (question) {
+          return question.issue === issue && question.direction === direction;
+        });
+        if (candidates.length < 2) throw new Error("每個議題與方向至少需要兩題：" + dimension + "/" + issue);
+        selection.push(shuffle(candidates, rng)[0]);
+      }
+
       if (facets) {
         Object.keys(facets).forEach(function (facet) {
-          [1, -1].forEach(function (direction) {
-            const candidates = questions.filter(function (question) {
-              return question.dimension === dimension && question.facet === facet && question.direction === direction;
-            });
-            if (!candidates.length) throw new Error("每個議題剖面與方向至少需要一題：" + dimension + "/" + facet);
-            selection.push(shuffle(candidates, rng)[0]);
+          const facetIssues = issueKeys.filter(function (issue) {
+            return dimensionItems.some(function (question) { return question.issue === issue && question.facet === facet; });
           });
+          if (facetIssues.length !== 2) throw new Error("每個議題剖面必須包含兩個議題：" + dimension + "/" + facet);
+          const orderedIssues = shuffle(facetIssues, rng);
+          const directions = shuffle([1, -1], rng);
+          orderedIssues.forEach(function (issue, index) { pick(issue, directions[index]); });
         });
         return;
       }
-      [1, -1].forEach(function (direction) {
-        const candidates = questions.filter(function (question) {
-          return question.dimension === dimension && question.direction === direction;
-        });
-        if (candidates.length < 2) throw new Error("每個測量軸與方向至少需要兩題：" + dimension);
-        selection.push.apply(selection, shuffle(candidates, rng).slice(0, 2));
-      });
+      const orderedIssues = shuffle(issueKeys, rng);
+      const directions = shuffle([1, 1, -1, -1], rng);
+      orderedIssues.forEach(function (issue, index) { pick(issue, directions[index]); });
     });
     return shuffle(selection, rng);
   }

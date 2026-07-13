@@ -5,7 +5,7 @@
   const quizSession = window.QuizSession;
   const recordCodec = window.PoliticalRecord;
   const types = window.PERSONALITY_TYPES;
-  const storageKey = "political-values-v2.2";
+  const storageKey = "political-values-v3";
   const options = [
     { value: 1, label: "非常不同意" },
     { value: 2, label: "比較不同意" },
@@ -61,7 +61,7 @@
     const question = state.questions[state.current];
     const dimension = bank.dimensions[question.dimension];
     $("dimensionLabel").textContent = dimension.label;
-    $("topicLabel").textContent = question.topic;
+    $("topicLabel").textContent = bank.issues[question.dimension][question.issue].label + " · " + question.topic;
     $("questionText").textContent = question.text;
     $("questionNumber").textContent = String(state.current + 1).padStart(2, "0");
     $("questionTotal").textContent = state.questions.length;
@@ -202,7 +202,7 @@
       const firstLabel = row.firstAnswer === null ? "對方未抽到此題" : answerLabel(row.firstAnswer);
       const secondLabel = row.secondAnswer === null ? "你未抽到此題" : answerLabel(row.secondAnswer);
       item.innerHTML =
-        "<div class=\"comparison-question\"><span>" + String(index + 1).padStart(2, "0") + " · " + row.question.topic + "</span><h3>" + row.question.text + "</h3></div>" +
+        "<div class=\"comparison-question\"><span>" + String(index + 1).padStart(2, "0") + " · " + bank.issues[row.question.dimension][row.question.issue].label + " / " + row.question.topic + "</span><h3>" + row.question.text + "</h3></div>" +
         "<div class=\"comparison-answer" + (row.firstAnswer === null ? " is-missing" : "") + "\"><small>對方</small><b>" + firstLabel + "</b></div>" +
         "<div class=\"comparison-answer" + (row.secondAnswer === null ? " is-missing" : "") + "\"><small>你</small><b>" + secondLabel + "</b></div>";
       $("comparisonRows").appendChild(item);

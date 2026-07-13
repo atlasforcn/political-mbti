@@ -4,23 +4,43 @@ const bank = require("../questions.js");
 const { scoreQuiz, validate } = require("../scoring.js");
 const { selectBalancedQuestions, restoreQuestions } = require("../quiz-session.js");
 
-test("題庫每軸各有八題且正反向平衡", () => {
+test("題庫有十六個議題，每個議題各四題且正反向平衡", () => {
+  assert.equal(bank.questions.length, 64);
   Object.keys(bank.dimensions).forEach((dimension) => {
     const items = bank.questions.filter((question) => question.dimension === dimension);
-    assert.equal(items.length, 8);
-    assert.equal(items.filter((item) => item.direction === 1).length, 4);
-    assert.equal(items.filter((item) => item.direction === -1).length, 4);
+    assert.equal(items.length, 16);
+    assert.equal(items.filter((item) => item.direction === 1).length, 8);
+    assert.equal(items.filter((item) => item.direction === -1).length, 8);
+    const issueKeys = Object.keys(bank.issues[dimension]);
+    assert.equal(issueKeys.length, 4);
+    issueKeys.forEach((issue) => {
+      const issueItems = items.filter((item) => item.issue === issue);
+      assert.equal(issueItems.length, 4);
+      assert.equal(issueItems.filter((item) => item.direction === 1).length, 2);
+      assert.equal(issueItems.filter((item) => item.direction === -1).length, 2);
+      if (dimension === "role") {
+        assert.ok(bank.issues.role[issue].facet);
+        issueItems.forEach((item) => assert.equal(item.facet, bank.issues.role[issue].facet));
+      }
+    });
   });
   assert.equal(new Set(bank.questions.map((question) => question.id)).size, bank.questions.length);
+  assert.equal(new Set(bank.questions.map((question) => question.text)).size, bank.questions.length);
+  bank.questions.forEach((question) => {
+    assert.ok(question.topic);
+    assert.ok(question.text.endsWith("。"));
+    assert.ok([...question.text].length >= 18 && [...question.text].length <= 45);
+  });
 });
 
-test("每次從 32 題平衡抽出 16 題", () => {
+test("每次從 64 題抽出 16 題並完整涵蓋所有議題", () => {
   const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.42);
   assert.equal(selected.length, 16);
   assert.equal(new Set(selected.map((question) => question.id)).size, 16);
   Object.keys(bank.dimensions).forEach((dimension) => {
     const items = selected.filter((question) => question.dimension === dimension);
     assert.equal(items.length, 4);
+    assert.deepEqual(new Set(items.map((item) => item.issue)), new Set(Object.keys(bank.issues[dimension])));
     assert.equal(items.filter((item) => item.direction === 1).length, 2);
     assert.equal(items.filter((item) => item.direction === -1).length, 2);
   });
@@ -31,6 +51,19 @@ test("每次從 32 題平衡抽出 16 題", () => {
     assert.equal(items.filter((item) => item.direction === 1).length, 1);
     assert.equal(items.filter((item) => item.direction === -1).length, 1);
   });
+});
+
+test("題庫中的 64 題都能在重複抽題時被選中", () => {
+  let seed = 20260713;
+  const random = () => {
+    seed = (seed * 1664525 + 1013904223) >>> 0;
+    return seed / 4294967296;
+  };
+  const seen = new Set();
+  for (let index = 0; index < 500; index += 1) {
+    selectBalancedQuestions(bank.questions, bank.dimensions, random).forEach((question) => seen.add(question.id));
+  }
+  assert.equal(seen.size, bank.questions.length);
 });
 
 test("政府邊界能保留跨議題的大小政府矛盾", () => {
@@ -87,7 +120,12 @@ test("拒絕缺漏與超出量表的答案", () => {
 
 test("不確定答案不會稀釋其他有效答案", () => {
   const selected = selectBalancedQuestions(bank.questions, bank.dimensions, () => 0.31);
-  const answers = selected.map((question, index) => index % 4 === 0 ? (question.direction === 1 ? 5 : 1) : 3);
+  const answeredDimensions = new Set();
+  const answers = selected.map((question) => {
+    if (answeredDimensions.has(question.dimension)) return 3;
+    answeredDimensions.add(question.dimension);
+    return question.direction === 1 ? 5 : 1;
+  });
   const result = scoreQuiz(selected, answers, bank.dimensions);
   Object.values(result.scores).forEach((score) => {
     assert.equal(score.leftPercentage, 100);

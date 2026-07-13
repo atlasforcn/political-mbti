@@ -150,7 +150,7 @@
     } else {
       $("resultNoteNumber").textContent = "16 / TYPES";
       $("resultNoteTitle").textContent = "網址就是紀錄";
-      $("resultNoteBody").textContent = "你的題號與答案已保存在網址 #record 後方。複製完整網址即可保存或傳給朋友；拿到網址的人可以直接查看，或用自己的答案比較。";
+      $("resultNoteBody").textContent = "你的題號與答案已轉成 R01A 這類代碼，保存在網址 #r 後方。複製完整網址即可保存或傳給朋友；拿到網址的人可以直接查看，或用自己的答案比較。";
     }
   }
 
@@ -273,6 +273,22 @@
     navigator.clipboard.writeText(lines.join("\n")).then(function () { showToast("結果與紀錄網址已複製"); }).catch(function () { showToast("無法複製，請檢查瀏覽器權限"); });
   }
 
+  function importFriendRecord(event) {
+    event.preventDefault();
+    const hash = recordCodec.extractHash($("friendUrlInput").value);
+    const decoded = hash && recordCodec.decode(hash, bank.questions);
+    if (!decoded) {
+      $("friendUrlStatus").textContent = "讀不到有效紀錄。請確認網址包含完整的 #r=… 代碼。";
+      $("friendUrlInput").setAttribute("aria-invalid", "true");
+      return;
+    }
+    $("friendUrlStatus").textContent = "";
+    $("friendUrlInput").removeAttribute("aria-invalid");
+    writeRecordHash(decoded.records);
+    renderRecords(decoded.records, decoded.records.length === 1);
+    if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
+  }
+
   function initializeFromHash() {
     if (!location.hash) return;
     const decoded = recordCodec.decode(location.hash, bank.questions);
@@ -280,11 +296,13 @@
       showToast("這個紀錄網址無法讀取或已損壞");
       return;
     }
+    if (decoded.format === "legacy") writeRecordHash(decoded.records);
     renderRecords(decoded.records, decoded.records.length === 1);
     if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
   }
 
   $("startButton").addEventListener("click", start);
+  $("friendImportForm").addEventListener("submit", importFriendRecord);
   $("backButton").addEventListener("click", function () { if (state.current > 0) { state.current -= 1; saveProgress(); renderQuestion(); } });
   $("closeButton").addEventListener("click", function () { saveProgress(); showScreen($("introScreen")); });
   $("compareButton").addEventListener("click", startComparison);

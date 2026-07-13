@@ -68,6 +68,16 @@ main { min-height: calc(100vh - 76px); }
 .lede { max-width: 680px; margin: 30px 0 0; font-size: clamp(17px, 1.6vw, 22px); line-height: 1.85; }
 .intro-actions { display: flex; align-items: center; gap: 24px; margin-top: 42px; }
 .intro-actions p { color: var(--muted); font-size: 13px; }
+.friend-import { max-width: 700px; margin-top: 34px; padding-top: 24px; border-top: 1px solid var(--line); }
+.friend-import label { display: flex; align-items: baseline; gap: 12px; margin-bottom: 10px; font-weight: 800; }
+.friend-import label span { color: var(--coral); font-size: 10px; letter-spacing: 1px; }
+.friend-import > div { display: grid; grid-template-columns: minmax(0, 1fr) auto; }
+.friend-import input { min-width: 0; min-height: 50px; padding: 12px 14px; border: 1px solid var(--ink); border-right: 0; border-radius: 4px 0 0 4px; background: var(--surface); color: var(--ink); font: 500 13px var(--sans); }
+.friend-import input:focus { position: relative; z-index: 1; outline: 3px solid var(--yellow); outline-offset: 0; }
+.friend-import .secondary-button { border-radius: 0 4px 4px 0; white-space: nowrap; }
+.friend-import > p { margin: 8px 0 0; color: var(--muted); font-size: 11px; }
+.friend-import code { color: var(--green); font-weight: 800; }
+.friend-import .import-status { min-height: 1.4em; color: var(--coral); font-weight: 700; }
 .primary-button, .secondary-button {
   min-height: 50px;
   border: 1px solid var(--ink);
@@ -199,6 +209,9 @@ dialog::backdrop { background: rgba(23, 34, 29, .72); }
   .intro-copy { min-height: calc(78vh - 76px); border-right: 0; border-bottom: 1px solid var(--ink); }
   .axis-preview { min-height: 420px; }
   .intro-actions { align-items: flex-start; flex-direction: column; }
+  .friend-import > div { grid-template-columns: 1fr; gap: 8px; }
+  .friend-import input { border-right: 1px solid var(--ink); border-radius: 4px; }
+  .friend-import .secondary-button { border-radius: 4px; }
   .quiz-screen { grid-template-columns: 1fr; }
   .quiz-meta { grid-row: auto; padding: 22px; border-right: 0; border-bottom: 1px solid var(--ink); flex-direction: row; align-items: center; }
   .question-count span:first-child { font-size: 40px; }

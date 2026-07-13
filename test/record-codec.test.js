@@ -17,19 +17,29 @@ function makeRecord(seed, answer) {
   return { questionIds: questions.map((question) => question.id), answers: questions.map(() => answer) };
 }
 
+function makeLegacyHash(record, bankVersion) {
+  const payload = JSON.stringify({ v: 1, b: bankVersion, r: [{ q: record.questionIds, a: record.answers.join("") }] });
+  return "#record=" + Buffer.from(payload, "utf8").toString("base64").replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+}
+
 test("單人紀錄可編碼進 hash 並完整還原", () => {
   const record = makeRecord(20, 4);
   const hash = recordCodec.encode([record], bank.version, bank.questions);
   const decoded = recordCodec.decode(hash, bank.questions);
-  assert.match(hash, /^#record=[A-Za-z0-9_-]+$/);
+  assert.match(hash, /^#r=v3_0_0;[A-Z0-9.~]+$/);
+  assert.ok(!/[{}%\u4e00-\u9fff]/u.test(hash));
+  assert.ok(hash.length < 180);
   assert.equal(decoded.bankVersion, bank.version);
+  assert.equal(decoded.format, "compact");
   assert.deepEqual(decoded.records, [record]);
 });
 
 test("比較網址可保存兩份紀錄", () => {
   const first = makeRecord(10, 1);
   const second = makeRecord(80, 5);
-  const decoded = recordCodec.decode(recordCodec.encode([first, second], bank.version, bank.questions), bank.questions);
+  const hash = recordCodec.encode([first, second], bank.version, bank.questions);
+  const decoded = recordCodec.decode(hash, bank.questions);
+  assert.ok(hash.includes("~"));
   assert.deepEqual(decoded.records, [first, second]);
 });
 
@@ -46,17 +56,26 @@ test("不同抽題組會逐題標出雙方未抽到的題目", () => {
 
 test("損壞、未知題號或不合法答案的網址會被拒絕", () => {
   const record = makeRecord(30, 4);
-  assert.equal(recordCodec.decode("#record=not-valid", bank.questions), null);
+  assert.equal(recordCodec.decode("#r=v3_0_0;not-valid", bank.questions), null);
   assert.throws(() => recordCodec.encode([{ ...record, questionIds: record.questionIds.map((id, index) => index ? id : "missing") }], bank.version, bank.questions), /未知題號/);
   assert.throws(() => recordCodec.encode([{ ...record, answers: record.answers.map((answer, index) => index ? answer : 9) }], bank.version, bank.questions), /1 到 5/);
 });
 
-test("2.2 版既有題號仍可還原分享紀錄", () => {
+test("舊版 Base64URL 分享網址仍可還原並標記為 legacy", () => {
   const oldRecord = {
     questionIds: ["R01", "R02", "R03", "R04", "D01", "D02", "D03", "D04", "C01", "C02", "C03", "C04", "A01", "A02", "A03", "A04"],
     answers: [1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1, 2, 3, 4, 5, 1]
   };
-  const decoded = recordCodec.decode(recordCodec.encode([oldRecord], "2.2.0", bank.questions), bank.questions);
+  const decoded = recordCodec.decode(makeLegacyHash(oldRecord, "2.2.0"), bank.questions);
   assert.equal(decoded.bankVersion, "2.2.0");
+  assert.equal(decoded.format, "legacy");
   assert.deepEqual(decoded.records[0], oldRecord);
+});
+
+test("可從完整網址或單獨 hash 擷取紀錄碼", () => {
+  const hash = recordCodec.encode([makeRecord(42, 5)], bank.version, bank.questions);
+  assert.equal(recordCodec.extractHash("https://example.com/quiz" + hash), hash);
+  assert.equal(recordCodec.extractHash("  " + hash + "  "), hash);
+  assert.equal(recordCodec.extractHash("https://example.com/quiz"), null);
+  assert.equal(recordCodec.extractHash(""), null);
 });

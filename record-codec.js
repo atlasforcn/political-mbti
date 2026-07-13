@@ -5,12 +5,10 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
 
-  const prefix = "#record=";
-
-  function toBase64Url(text) {
-    const encoded = typeof btoa === "function" ? btoa(text) : Buffer.from(text, "utf8").toString("base64");
-    return encoded.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
-  }
+  const prefix = "#r=";
+  const legacyPrefix = "#record=";
+  const answerCodes = { 1: "A", 2: "B", 3: "C", 4: "D", 5: "E" };
+  const codeAnswers = { A: 1, B: 2, C: 3, D: 4, E: 5 };
 
   function fromBase64Url(text) {
     const padding = "=".repeat((4 - text.length % 4) % 4);
@@ -34,22 +32,63 @@
     if (!Array.isArray(records) || records.length < 1 || records.length > 2) throw new Error("網址只能保存一至兩份紀錄");
     const compact = records.map(function (record) {
       const valid = validateRecord(record, questions);
-      return { q: valid.questionIds, a: valid.answers.join("") };
+      return valid.questionIds.map(function (id, index) { return id + answerCodes[valid.answers[index]]; }).join(".");
     });
-    return prefix + toBase64Url(JSON.stringify({ v: 1, b: bankVersion, r: compact }));
+    const versionCode = String(bankVersion || "unknown").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
+    return prefix + "v" + versionCode + ";" + compact.join("~");
   }
 
-  function decode(hash, questions) {
+  function decodeCompact(hash, questions) {
     try {
-      if (typeof hash !== "string" || hash.indexOf(prefix) !== 0 || hash.length > 12000) return null;
-      const payload = JSON.parse(fromBase64Url(hash.slice(prefix.length)));
+      if (hash.indexOf(prefix) !== 0) return null;
+      const body = hash.slice(prefix.length);
+      const separator = body.indexOf(";");
+      if (separator < 2 || body[0] !== "v") return null;
+      const bankVersion = body.slice(1, separator).replace(/_/g, ".");
+      const recordCodes = body.slice(separator + 1).split("~");
+      if (recordCodes.length < 1 || recordCodes.length > 2) return null;
+      const records = recordCodes.map(function (recordCode) {
+        const tokens = recordCode.split(".");
+        if (tokens.length !== 16) throw new Error("紀錄必須包含 16 題");
+        const questionIds = [];
+        const answers = [];
+        tokens.forEach(function (token) {
+          const match = token.match(/^([A-Z][0-9]+)([A-E])$/);
+          if (!match) throw new Error("無效的題目答案代碼");
+          questionIds.push(match[1]);
+          answers.push(codeAnswers[match[2]]);
+        });
+        return validateRecord({ questionIds, answers }, questions);
+      });
+      return { bankVersion, records, format: "compact" };
+    } catch (_) { return null; }
+  }
+
+  function decodeLegacy(hash, questions) {
+    try {
+      if (hash.indexOf(legacyPrefix) !== 0) return null;
+      const payload = JSON.parse(fromBase64Url(hash.slice(legacyPrefix.length)));
       if (!payload || payload.v !== 1 || !Array.isArray(payload.r) || payload.r.length < 1 || payload.r.length > 2) return null;
       const records = payload.r.map(function (compact) {
         if (!compact || !Array.isArray(compact.q) || typeof compact.a !== "string") throw new Error("無效的精簡紀錄");
         return validateRecord({ questionIds: compact.q, answers: compact.a.split("").map(Number) }, questions);
       });
-      return { bankVersion: payload.b || "unknown", records };
+      return { bankVersion: payload.b || "unknown", records, format: "legacy" };
     } catch (_) { return null; }
+  }
+
+  function decode(hash, questions) {
+    if (typeof hash !== "string" || hash.length > 12000) return null;
+    return decodeCompact(hash, questions) || decodeLegacy(hash, questions);
+  }
+
+  function extractHash(input) {
+    if (typeof input !== "string") return null;
+    const value = input.trim();
+    if (!value) return null;
+    if (value[0] === "#") return value;
+    const hashIndex = value.indexOf("#");
+    return hashIndex >= 0 ? value.slice(hashIndex) : null;
   }
 
   function buildComparison(first, second, questions) {
@@ -78,5 +117,5 @@
     };
   }
 
-  return { encode, decode, validateRecord, buildComparison };
+  return { encode, decode, extractHash, validateRecord, buildComparison };
 });

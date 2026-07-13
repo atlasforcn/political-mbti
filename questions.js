@@ -56,5 +56,5 @@
     { id: "A08", dimension: "agency", topic: "心理健康", direction: -1, text: "心理健康問題應被理解為社會支持與生活環境的共同結果，而不只是個人的調適能力。" }
   ];
 
-  return { version: "2.1.0", dimensions, questions };
+  return { version: "2.2.0", dimensions, questions };
 });

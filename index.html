@@ -3,12 +3,12 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="用四條價值軸探索你的政治傾向。32 題題庫平衡抽取 16 題，匿名作答。">
+  <meta name="description" content="用四條價值軸探索政治傾向，將完整作答保存在 hash 網址，並和朋友跨題組逐題比較。">
   <title>政見座標｜政治價值傾向測驗</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=2.2.0">
 </head>
 <body>
   <header class="site-header">
@@ -94,15 +94,25 @@
           </section>
         </section>
         <aside class="result-notes">
-          <p class="note-number">16 / TYPES</p>
-          <h2>怎麼閱讀？</h2>
-        <p>代碼記錄每條軸較接近的一端；長條保留連續位置。「政府邊界」不另加一個人格字母，而是比較你在社會保障與經濟治理上的選擇，讓議題間的矛盾不被平均掉。</p>
+          <p class="note-number" id="resultNoteNumber">16 / TYPES</p>
+          <h2 id="resultNoteTitle">怎麼閱讀？</h2>
+          <p id="resultNoteBody">代碼記錄每條軸較接近的一端；長條保留連續位置。「政府邊界」不另加一個人格字母，而是比較你在社會保障與經濟治理上的選擇，讓議題間的矛盾不被平均掉。</p>
           <div class="result-actions">
-            <button class="primary-button" id="shareButton" type="button">複製結果摘要</button>
+            <button class="primary-button" id="compareButton" type="button" hidden>用我的答案比較 <span aria-hidden="true">→</span></button>
+            <button class="primary-button" id="shareButton" type="button">複製結果與網址</button>
             <button class="secondary-button" id="restartButton" type="button">重新測驗</button>
           </div>
         </aside>
       </div>
+      <section class="comparison-section" id="comparisonSection" aria-labelledby="comparisonTitle" hidden>
+        <div class="comparison-heading">
+          <div><p class="kicker">ANSWER BY ANSWER</p><h2 id="comparisonTitle">你們怎麼選？</h2></div>
+          <p id="comparisonSummary"></p>
+        </div>
+        <div class="comparison-axes" id="comparisonAxes" aria-label="雙方四軸比較"></div>
+        <div class="comparison-legend"><span><i class="legend-dot is-shared"></i>雙方都有作答</span><span><i class="legend-dot is-missing"></i>其中一方未抽到</span></div>
+        <div class="comparison-list" id="comparisonRows"></div>
+      </section>
     </section>
   </main>
 
@@ -117,15 +127,18 @@
       <p>每次從 32 題題庫抽出 16 題；每軸固定抽 4 題，正、反向各 2 題。公共角色軸還會固定涵蓋社會保障與經濟治理兩類，以比較受測者是否依議題採取不同的政府邊界。四個主要選項要求表達方向；「不確定」不參與計分。</p>
       <h3>重要限制</h3>
       <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
+      <h3>紀錄網址</h3>
+      <p>完成後，題號與答案會編碼在網址的 hash（#record=…）中，方便保存與比較。hash 不會傳送給網站伺服器；任何拿到完整網址的人都能讀取其中的作答紀錄，分享前請自行確認。</p>
       <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>
     </div>
   </dialog>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="questions.js"></script>
-  <script src="personality-types.js"></script>
-  <script src="scoring.js"></script>
-  <script src="quiz-session.js"></script>
-  <script src="app.js"></script>
+  <script src="questions.js?v=2.2.0"></script>
+  <script src="personality-types.js?v=2.2.0"></script>
+  <script src="scoring.js?v=2.2.0"></script>
+  <script src="quiz-session.js?v=2.2.0"></script>
+  <script src="record-codec.js?v=2.2.0"></script>
+  <script src="app.js?v=2.2.0"></script>
 </body>
 </html>

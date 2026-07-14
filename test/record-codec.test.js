@@ -26,7 +26,7 @@ test("單人紀錄可編碼進 hash 並完整還原", () => {
   const record = makeRecord(20, 4);
   const hash = recordCodec.encode([record], bank.version, bank.questions);
   const decoded = recordCodec.decode(hash, bank.questions);
-  assert.match(hash, /^#r=v3_0_0;[A-Z0-9.~]+$/);
+  assert.match(hash, /^#r=v4_0_0;[A-Z0-9.~]+$/);
   assert.ok(!/[{}%\u4e00-\u9fff]/u.test(hash));
   assert.ok(hash.length < 180);
   assert.equal(decoded.bankVersion, bank.version);

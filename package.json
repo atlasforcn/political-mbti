@@ -1,6 +1,6 @@
 {
   "name": "political-values-taiwan",
-  "version": "3.2.2",
+  "version": "4.0.0",
   "private": true,
   "scripts": {
     "test": "node --test",

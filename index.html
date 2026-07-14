@@ -8,7 +8,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css?v=3.2.0">
+  <link rel="stylesheet" href="styles.css?v=4.0.0">
 </head>
 <body>
   <header class="site-header">
@@ -36,7 +36,7 @@
         <form class="friend-import" id="friendImportForm" novalidate>
           <label for="friendUrlInput"><span>COMPARE / A FRIEND</span>貼上朋友的結果網址</label>
           <div>
-            <input id="friendUrlInput" type="text" inputmode="url" autocomplete="off" placeholder="https://…/#r=v3_0_0;R01A…" aria-describedby="friendUrlHelp friendUrlStatus">
+            <input id="friendUrlInput" type="text" inputmode="url" autocomplete="off" placeholder="https://…/#r=v4_0_0;R01A…" aria-describedby="friendUrlHelp friendUrlStatus">
             <button class="secondary-button" type="submit">讀取結果 →</button>
           </div>
           <p id="friendUrlHelp">可貼完整網址，或只貼 <code>#r=…</code> 紀錄碼。</p>
@@ -65,6 +65,11 @@
       <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
       <article class="question-panel">
         <p class="topic" id="topicLabel">社會安全</p>
+        <aside class="question-context" id="questionContext" aria-labelledby="contextLabel">
+          <div><span id="contextLabel">作答前先看現況</span><b id="contextAsOf"></b></div>
+          <p id="contextText"></p>
+          <nav class="context-sources" id="contextSources" aria-label="本題官方資料來源"></nav>
+        </aside>
         <h2 id="questionText"></h2>
         <fieldset class="answer-scale" id="answerScale">
           <legend class="sr-only">選擇同意程度</legend>
@@ -188,24 +193,24 @@
       <button class="icon-button" id="closeMethodButton" type="button" aria-label="關閉方法說明">×</button>
     </div>
     <div class="method-content">
-      <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依台灣語境重新撰寫；沒有直接複製受版權保護的題組。</p>
+      <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依臺灣語境重新撰寫。每個議題另附有日期的臺灣制度背景與官方來源，協助玩家根據現況判斷，而不是測驗時事記憶。</p>
       <h3>計分方式</h3>
       <p>題庫共有 64 題，分成四條軸、16 個議題，每個議題各有 4 題且正、反向各 2 題。每次固定從每個議題抽 1 題，總共 16 題；各軸仍維持正、反向各 2 題。四個主要選項要求表達方向；「不確定」不參與計分。</p>
       <h3>重要限制</h3>
       <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
       <h3>紀錄網址</h3>
-      <p>完成後，暱稱、題號與答案會轉成精簡代碼，保存在網址的 hash（#r=…）中；同一網址最多接力保存 6 人。這是編碼而非加密；hash 不會傳送給網站伺服器，任何拿到完整網址的人仍能透過本網站讀取其中所有人的暱稱與作答紀錄。</p>
+      <p>完成後，暱稱、題號與答案會轉成精簡代碼，保存在網址的 hash（#r=…）中；同一網址最多接力保存 6 人。這是編碼而非加密；hash 不會傳送給網站伺服器，任何拿到完整網址的人仍能透過本網站讀取其中所有人的暱稱與作答紀錄。題目意義更新時會升級題庫版本，舊版紀錄不會套用到新題目。</p>
       <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>
     </div>
   </dialog>
 
   <div class="toast" id="toast" role="status"></div>
-  <script src="questions.js?v=3.2.0"></script>
-  <script src="personality-types.js?v=3.2.2"></script>
-  <script src="scoring.js?v=3.2.0"></script>
-  <script src="quiz-session.js?v=3.2.0"></script>
-  <script src="record-codec.js?v=3.2.0"></script>
-  <script src="discussion-profile.js?v=3.2.0"></script>
-  <script src="app.js?v=3.2.1"></script>
+  <script src="questions.js?v=4.0.0"></script>
+  <script src="personality-types.js?v=4.0.0"></script>
+  <script src="scoring.js?v=4.0.0"></script>
+  <script src="quiz-session.js?v=4.0.0"></script>
+  <script src="record-codec.js?v=4.0.0"></script>
+  <script src="discussion-profile.js?v=4.0.0"></script>
+  <script src="app.js?v=4.0.0"></script>
 </body>
 </html>

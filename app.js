@@ -6,7 +6,7 @@
   const recordCodec = window.PoliticalRecord;
   const types = window.PERSONALITY_TYPES;
   const discussion = window.PoliticalDiscussion;
-  const storageKey = "political-values-v3";
+  const storageKey = "political-values-v4";
   const nameStorageKey = "political-values-name";
   const options = [
     { value: 1, label: "非常不同意" },
@@ -63,8 +63,20 @@
   function renderQuestion() {
     const question = state.questions[state.current];
     const dimension = bank.dimensions[question.dimension];
+    const issue = bank.issues[question.dimension][question.issue];
     $("dimensionLabel").textContent = dimension.label;
-    $("topicLabel").textContent = bank.issues[question.dimension][question.issue].label + " · " + question.topic;
+    $("topicLabel").textContent = issue.label + " · " + question.topic;
+    $("contextAsOf").textContent = issue.asOf;
+    $("contextText").textContent = issue.context;
+    $("contextSources").replaceChildren();
+    issue.sources.forEach(function (source) {
+      const link = document.createElement("a");
+      link.href = source.url;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = source.label + " ↗";
+      $("contextSources").appendChild(link);
+    });
     $("questionText").textContent = question.text;
     $("questionNumber").textContent = String(state.current + 1).padStart(2, "0");
     $("questionTotal").textContent = state.questions.length;
@@ -365,11 +377,15 @@
       $("friendUrlInput").setAttribute("aria-invalid", "true");
       return;
     }
+    if (decoded.bankVersion !== bank.version) {
+      $("friendUrlStatus").textContent = "這份網址使用舊題庫；題意已更新，請重新作答。";
+      $("friendUrlInput").setAttribute("aria-invalid", "true");
+      return;
+    }
     $("friendUrlStatus").textContent = "";
     $("friendUrlInput").removeAttribute("aria-invalid");
     writeRecordHash(decoded.records);
     renderRecords(decoded.records, true);
-    if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
   }
 
   function initializeFromHash() {
@@ -379,9 +395,13 @@
       showToast("這個紀錄網址無法讀取或已損壞");
       return;
     }
+    if (decoded.bankVersion !== bank.version) {
+      showScreen($("introScreen"));
+      showToast("這份網址使用舊題庫；題意已更新，請重新作答");
+      return;
+    }
     if (decoded.format === "legacy") writeRecordHash(decoded.records);
     renderRecords(decoded.records, true);
-    if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
   }
 
   $("participantName").value = localStorage.getItem(nameStorageKey) || "";

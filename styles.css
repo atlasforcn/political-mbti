@@ -113,7 +113,15 @@ main { min-height: calc(100vh - 76px); }
 .progress-track span { display: block; height: 100%; background: var(--coral); transition: width .25s ease; }
 .question-panel { width: min(920px, 100%); margin: auto; padding: 50px clamp(24px, 6vw, 84px) 62px; }
 .topic { display: inline-block; margin: 0 0 18px; padding: 5px 9px; background: var(--yellow); font-size: 12px; font-weight: 700; }
-.question-panel h2 { min-height: 3.4em; margin: 0 0 42px; font: 900 clamp(28px, 3.5vw, 48px)/1.55 var(--serif); }
+.question-context { margin: 0 0 26px; padding: 17px 19px 18px; border-top: 3px solid var(--coral); background: rgba(251, 250, 245, .76); box-shadow: inset 0 0 0 1px var(--line); }
+.question-context > div { display: flex; justify-content: space-between; gap: 16px; align-items: baseline; }
+.question-context > div span { color: var(--coral); font-size: 11px; font-weight: 900; letter-spacing: .8px; }
+.question-context > div b { color: var(--green); font-size: 11px; }
+.question-context > p { margin: 10px 0 12px; font-size: 13px; line-height: 1.75; }
+.context-sources { display: flex; flex-wrap: wrap; gap: 7px 14px; }
+.context-sources a { color: var(--green-dark); font-size: 11px; font-weight: 800; text-underline-offset: 3px; }
+.context-sources a:hover { color: var(--coral); }
+.question-panel h2 { min-height: 3.4em; margin: 0 0 36px; font: 900 clamp(27px, 3.2vw, 45px)/1.5 var(--serif); }
 .answer-scale { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 0; padding: 0; border: 0; }
 .answer-button { min-width: 0; min-height: 108px; display: flex; flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 13px; border: 1px solid var(--ink); border-radius: 4px; background: var(--surface); cursor: pointer; text-align: left; font-size: 13px; font-weight: 600; transition: transform .15s, background .15s, color .15s; }
 .answer-button:hover, .answer-button.is-selected { transform: translateY(-4px); background: var(--green); color: white; box-shadow: 4px 4px 0 var(--ink); }
@@ -270,6 +278,7 @@ dialog::backdrop { background: rgba(23, 34, 29, .72); }
   .question-count span:first-child { font-size: 40px; }
   .quiz-meta .kicker { margin-bottom: 5px; }
   .question-panel { padding-top: 34px; }
+  .question-context > div { align-items: flex-start; flex-direction: column; gap: 3px; }
   .answer-scale { grid-template-columns: 1fr; }
   .answer-button { min-height: 54px; flex-direction: row; align-items: center; justify-content: flex-start; gap: 13px; }
   .question-panel h2 { min-height: 0; margin-bottom: 28px; }

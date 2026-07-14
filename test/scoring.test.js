@@ -5,6 +5,7 @@ const { scoreQuiz, validate } = require("../scoring.js");
 const { selectBalancedQuestions, restoreQuestions } = require("../quiz-session.js");
 
 test("題庫有十六個議題，每個議題各四題且正反向平衡", () => {
+  assert.equal(bank.version, "4.0.0");
   assert.equal(bank.questions.length, 64);
   Object.keys(bank.dimensions).forEach((dimension) => {
     const items = bank.questions.filter((question) => question.dimension === dimension);
@@ -14,6 +15,14 @@ test("題庫有十六個議題，每個議題各四題且正反向平衡", () =>
     const issueKeys = Object.keys(bank.issues[dimension]);
     assert.equal(issueKeys.length, 4);
     issueKeys.forEach((issue) => {
+      const issueMeta = bank.issues[dimension][issue];
+      assert.ok(issueMeta.asOf);
+      assert.ok(issueMeta.context.length >= 20);
+      assert.ok(Array.isArray(issueMeta.sources) && issueMeta.sources.length >= 1);
+      issueMeta.sources.forEach((source) => {
+        assert.ok(source.label);
+        assert.match(source.url, /^https:\/\//);
+      });
       const issueItems = items.filter((item) => item.issue === issue);
       assert.equal(issueItems.length, 4);
       assert.equal(issueItems.filter((item) => item.direction === 1).length, 2);
@@ -29,7 +38,7 @@ test("題庫有十六個議題，每個議題各四題且正反向平衡", () =>
   bank.questions.forEach((question) => {
     assert.ok(question.topic);
     assert.ok(question.text.endsWith("。"));
-    assert.ok([...question.text].length >= 18 && [...question.text].length <= 45);
+    assert.ok([...question.text].length >= 18 && [...question.text].length <= 65);
   });
 });
 

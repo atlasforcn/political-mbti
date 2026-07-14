@@ -43,6 +43,22 @@ test("比較網址可保存兩份紀錄", () => {
   assert.deepEqual(decoded.records, [first, second]);
 });
 
+test("多人具名紀錄可在同一網址接力並完整還原", () => {
+  const records = ["小明", "Alice", "旅行不吵架"].map((name, index) => ({ ...makeRecord(index + 1, index + 1), name }));
+  const hash = recordCodec.encode(records, bank.version, bank.questions);
+  const decoded = recordCodec.decode(hash, bank.questions);
+  assert.deepEqual(decoded.records, records);
+  assert.ok(hash.length < 600);
+  const group = recordCodec.buildGroupComparison(records, bank.questions);
+  assert.equal(group.records.length, 3);
+  assert.ok(group.rows.length >= 16);
+});
+
+test("分享桌限制六人與二十字暱稱", () => {
+  assert.throws(() => recordCodec.encode(Array.from({ length: 7 }, (_, index) => makeRecord(index, 4)), bank.version, bank.questions), /一至六份/);
+  assert.throws(() => recordCodec.encode([{ ...makeRecord(1, 4), name: "這是一個超過二十個字所以應該要被拒絕掉的暱稱" }], bank.version, bank.questions), /1 到 20 個字/);
+});
+
 test("不同抽題組會逐題標出雙方未抽到的題目", () => {
   const first = makeRecord(10, 2);
   const second = makeRecord(80, 4);

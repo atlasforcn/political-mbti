@@ -9,11 +9,30 @@
   const legacyPrefix = "#record=";
   const answerCodes = { 1: "A", 2: "B", 3: "C", 4: "D", 5: "E" };
   const codeAnswers = { A: 1, B: 2, C: 3, D: 4, E: 5 };
+  const maxRecords = 6;
 
   function fromBase64Url(text) {
     const padding = "=".repeat((4 - text.length % 4) % 4);
     const encoded = text.replace(/-/g, "+").replace(/_/g, "/") + padding;
     return typeof atob === "function" ? atob(encoded) : Buffer.from(encoded, "base64").toString("utf8");
+  }
+
+  function encodeName(name) {
+    const bytes = unescape(encodeURIComponent(name));
+    const encoded = typeof btoa === "function" ? btoa(bytes) : Buffer.from(bytes, "binary").toString("base64");
+    return encoded.replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/g, "");
+  }
+
+  function decodeName(code) {
+    return decodeURIComponent(escape(fromBase64Url(code)));
+  }
+
+  function validateName(name) {
+    if (name === undefined || name === null || name === "") return "";
+    if (typeof name !== "string") throw new Error("暱稱格式錯誤");
+    const clean = name.trim().replace(/[\u0000-\u001f\u007f]/g, "");
+    if (!clean || Array.from(clean).length > 20) throw new Error("暱稱需為 1 到 20 個字");
+    return clean;
   }
 
   function validateRecord(record, questions) {
@@ -25,14 +44,18 @@
     record.answers.forEach(function (answer) {
       if (!Number.isInteger(answer) || answer < 1 || answer > 5) throw new Error("紀錄答案必須是 1 到 5");
     });
-    return { questionIds: record.questionIds.slice(), answers: record.answers.slice() };
+    const valid = { questionIds: record.questionIds.slice(), answers: record.answers.slice() };
+    const name = validateName(record.name);
+    if (name) valid.name = name;
+    return valid;
   }
 
   function encode(records, bankVersion, questions) {
-    if (!Array.isArray(records) || records.length < 1 || records.length > 2) throw new Error("網址只能保存一至兩份紀錄");
+    if (!Array.isArray(records) || records.length < 1 || records.length > maxRecords) throw new Error("網址只能保存一至六份紀錄");
     const compact = records.map(function (record) {
       const valid = validateRecord(record, questions);
-      return valid.questionIds.map(function (id, index) { return id + answerCodes[valid.answers[index]]; }).join(".");
+      const answers = valid.questionIds.map(function (id, index) { return id + answerCodes[valid.answers[index]]; }).join(".");
+      return valid.name ? "@" + encodeName(valid.name) + "!" + answers : answers;
     });
     const versionCode = String(bankVersion || "unknown").replace(/[^A-Za-z0-9]+/g, "_").replace(/^_+|_+$/g, "");
     return prefix + "v" + versionCode + ";" + compact.join("~");
@@ -46,8 +69,15 @@
       if (separator < 2 || body[0] !== "v") return null;
       const bankVersion = body.slice(1, separator).replace(/_/g, ".");
       const recordCodes = body.slice(separator + 1).split("~");
-      if (recordCodes.length < 1 || recordCodes.length > 2) return null;
+      if (recordCodes.length < 1 || recordCodes.length > maxRecords) return null;
       const records = recordCodes.map(function (recordCode) {
+        let name = "";
+        if (recordCode[0] === "@") {
+          const nameEnd = recordCode.indexOf("!");
+          if (nameEnd < 2) throw new Error("無效的暱稱代碼");
+          name = validateName(decodeName(recordCode.slice(1, nameEnd)));
+          recordCode = recordCode.slice(nameEnd + 1);
+        }
         const tokens = recordCode.split(".");
         if (tokens.length !== 16) throw new Error("紀錄必須包含 16 題");
         const questionIds = [];
@@ -58,7 +88,7 @@
           questionIds.push(match[1]);
           answers.push(codeAnswers[match[2]]);
         });
-        return validateRecord({ questionIds, answers }, questions);
+        return validateRecord({ name, questionIds, answers }, questions);
       });
       return { bankVersion, records, format: "compact" };
     } catch (_) { return null; }
@@ -68,7 +98,7 @@
     try {
       if (hash.indexOf(legacyPrefix) !== 0) return null;
       const payload = JSON.parse(fromBase64Url(hash.slice(legacyPrefix.length)));
-      if (!payload || payload.v !== 1 || !Array.isArray(payload.r) || payload.r.length < 1 || payload.r.length > 2) return null;
+      if (!payload || payload.v !== 1 || !Array.isArray(payload.r) || payload.r.length < 1 || payload.r.length > maxRecords) return null;
       const records = payload.r.map(function (compact) {
         if (!compact || !Array.isArray(compact.q) || typeof compact.a !== "string") throw new Error("無效的精簡紀錄");
         return validateRecord({ questionIds: compact.q, answers: compact.a.split("").map(Number) }, questions);
@@ -117,5 +147,26 @@
     };
   }
 
-  return { encode, decode, extractHash, validateRecord, buildComparison };
+  function buildGroupComparison(records, questions) {
+    if (!Array.isArray(records) || records.length < 2 || records.length > maxRecords) throw new Error("群組比較需要二至六份紀錄");
+    const validRecords = records.map(function (record) { return validateRecord(record, questions); });
+    const answerMaps = validRecords.map(function (record) {
+      return new Map(record.questionIds.map(function (id, index) { return [id, record.answers[index]]; }));
+    });
+    const rows = questions.filter(function (question) {
+      return answerMaps.some(function (answers) { return answers.has(question.id); });
+    }).map(function (question) {
+      const answers = answerMaps.map(function (map) { return map.has(question.id) ? map.get(question.id) : null; });
+      const certain = answers.filter(function (answer) { return answer !== null && answer !== 3; });
+      return {
+        question,
+        answers,
+        answeredCount: answers.filter(function (answer) { return answer !== null; }).length,
+        spread: certain.length > 1 ? Math.max.apply(null, certain) - Math.min.apply(null, certain) : 0
+      };
+    });
+    return { records: validRecords, rows };
+  }
+
+  return { encode, decode, extractHash, validateRecord, buildComparison, buildGroupComparison, maxRecords };
 });

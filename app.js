@@ -5,7 +5,9 @@
   const quizSession = window.QuizSession;
   const recordCodec = window.PoliticalRecord;
   const types = window.PERSONALITY_TYPES;
+  const discussion = window.PoliticalDiscussion;
   const storageKey = "political-values-v3";
+  const nameStorageKey = "political-values-name";
   const options = [
     { value: 1, label: "非常不同意" },
     { value: 2, label: "比較不同意" },
@@ -13,7 +15,7 @@
     { value: 5, label: "非常同意" },
     { value: 3, label: "不確定／不計分", uncertain: true }
   ];
-  const state = { current: 0, questions: [], answers: [], comparisonSource: null, lastRecord: null, lastRecords: [], lastResult: null };
+  const state = { current: 0, questions: [], answers: [], comparisonSources: [], lastRecord: null, lastRecords: [], lastResult: null, discussionProfile: null, debateIndex: 0 };
 
   const $ = function (id) { return document.getElementById(id); };
   const screens = [$("introScreen"), $("quizScreen"), $("resultScreen")];
@@ -34,7 +36,7 @@
       current: state.current,
       questionIds: state.questions.map(function (question) { return question.id; }),
       answers: state.answers,
-      comparisonSource: state.comparisonSource
+      comparisonSources: state.comparisonSources
     }));
   }
 
@@ -52,7 +54,8 @@
       state.questions = restoredQuestions;
       state.answers = saved.answers.slice();
       state.current = Math.min(Math.max(saved.current || 0, 0), state.questions.length - 1);
-      state.comparisonSource = saved.comparisonSource ? recordCodec.validateRecord(saved.comparisonSource, bank.questions) : state.comparisonSource;
+      const sources = saved.comparisonSources || (saved.comparisonSource ? [saved.comparisonSource] : []);
+      state.comparisonSources = Array.isArray(sources) ? sources.map(function (record) { return recordCodec.validateRecord(record, bank.questions); }) : [];
       return state.answers.some(function (answer) { return answer !== null; });
     } catch (_) { return false; }
   }
@@ -91,10 +94,11 @@
 
   function finishQuiz() {
     const record = {
+      name: $("participantName").value.trim() || "匿名玩家",
       questionIds: state.questions.map(function (question) { return question.id; }),
       answers: state.answers.slice()
     };
-    const records = state.comparisonSource ? [state.comparisonSource, record] : [record];
+    const records = state.comparisonSources.concat(record).slice(-recordCodec.maxRecords);
     writeRecordHash(records);
     renderRecords(records, false);
   }
@@ -110,6 +114,8 @@
     $("resultCode").textContent = result.type;
     $("resultName").textContent = profile.name;
     $("resultSummary").textContent = profile.summary;
+    renderThoughtNeighbor(profile.thought);
+    renderDiscussion(record, result);
     $("axisResults").innerHTML = "";
 
     Object.keys(bank.dimensions).forEach(function (key) {
@@ -126,27 +132,65 @@
     });
 
     renderGovernmentProfile(result.governmentProfile);
-    $("comparisonSection").hidden = records.length !== 2;
-    if (records.length === 2) renderComparison(records[0], records[1]);
-    renderResultNotes(records.length === 2, importedSingle);
+    $("comparisonSection").hidden = records.length < 2;
+    if (records.length >= 2) renderComparison(records);
+    renderResultNotes(records.length >= 2, importedSingle, records.length);
     localStorage.removeItem(storageKey);
     state.lastResult = result;
     state.lastRecord = record;
     state.lastRecords = records.slice();
-    state.comparisonSource = records.length === 2 ? records[0] : null;
+    state.comparisonSources = records.length >= 2 ? records.slice(0, -1) : [];
     showScreen($("resultScreen"));
   }
 
-  function renderResultNotes(isComparison, importedSingle) {
-    $("compareButton").hidden = !importedSingle;
+  function renderThoughtNeighbor(thought) {
+    $("thoughtThinker").textContent = thought.thinker;
+    $("thoughtField").textContent = thought.field;
+    $("thoughtQuestion").textContent = "「" + thought.question + "」";
+    $("thoughtConnection").textContent = thought.connection;
+    $("thoughtWork").textContent = thought.work;
+    $("thoughtLink").href = thought.url;
+  }
+
+  function renderDiscussion(record, result) {
+    const questions = recordQuestions(record);
+    const profile = discussion.analyze(questions, record.answers, result, bank.dimensions, bank.issues);
+    state.discussionProfile = profile;
+    state.debateIndex = 0;
+    $("discussionArchetype").textContent = profile.archetype;
+    $("discussionArchetypeCopy").textContent = profile.archetypeCopy;
+    $("discussionAxis").textContent = "最鮮明軸線 · " + profile.strongestAxis;
+    $("discussionHeat").textContent = profile.heat;
+    $("discussionHeatBar").style.width = profile.heat + "%";
+    $("discussionHeatLabel").textContent = profile.heatLabel;
+    $("rebelCard").hidden = !profile.rebel;
+    if (profile.rebel) {
+      $("rebelTopic").textContent = profile.rebel.issue + " · " + profile.rebel.question.topic;
+      $("rebelQuestion").textContent = profile.rebel.question.text;
+      $("rebelAnswer").textContent = "你選了「" + discussion.answerCopy(profile.rebel.answer) + "」";
+    }
+    renderDebatePrompt();
+  }
+
+  function renderDebatePrompt() {
+    const prompts = state.discussionProfile && state.discussionProfile.prompts;
+    if (!prompts || !prompts.length) return;
+    const prompt = prompts[state.debateIndex % prompts.length];
+    $("debateTopic").textContent = prompt.topic;
+    $("debateQuestion").textContent = prompt.question;
+    $("debateAnswer").textContent = prompt.answer;
+  }
+
+  function renderResultNotes(isComparison, importedSingle, recordCount) {
+    $("compareButton").hidden = !importedSingle || recordCount >= recordCodec.maxRecords;
     if (isComparison) {
-      $("resultNoteNumber").textContent = "2 / RECORDS";
-      $("resultNoteTitle").textContent = "比較已完成";
-      $("resultNoteBody").textContent = "四軸比較保留整體方向；逐題表只比較雙方實際抽到的題目。沒有抽到的題目會明確標記，不當作中立或不同意。";
+      $("resultNoteNumber").textContent = recordCount + " / 6 PLAYERS";
+      $("resultNoteTitle").textContent = "共同討論桌";
+      $("resultNoteBody").textContent = "這條網址已累積 " + recordCount + " 人。分享出去後，朋友可以查看全員答案，再把自己加入同一張討論桌。";
     } else if (importedSingle) {
       $("resultNoteNumber").textContent = "SHARED / RECORD";
       $("resultNoteTitle").textContent = "朋友傳來的結果";
-      $("resultNoteBody").textContent = "這份結果由網址中的紀錄還原。點「用我的答案比較」會抽出你的 16 題；即使題組不同，完成後仍會逐題標出雙方是否抽到。";
+      $("resultNoteBody").textContent = "這份結果由網址中的紀錄還原。點「加入我的答案」會抽出你的 16 題，完成後把你加入同一張接力討論桌。";
     } else {
       $("resultNoteNumber").textContent = "16 / TYPES";
       $("resultNoteTitle").textContent = "網址就是紀錄";
@@ -177,36 +221,59 @@
     });
   }
 
-  function renderComparison(firstRecord, secondRecord) {
-    const comparison = recordCodec.buildComparison(firstRecord, secondRecord, bank.questions);
-    const firstResult = scoreRecord(firstRecord);
-    const secondResult = scoreRecord(secondRecord);
-    $("comparisonSummary").textContent = "共同抽到 " + comparison.sharedCount + " 題 · 對方獨有 " + comparison.onlyFirstCount + " 題 · 你獨有 " + comparison.onlySecondCount + " 題";
+  function participantName(record, index, total) {
+    return record.name || (index === total - 1 ? "你" : "玩家 " + (index + 1));
+  }
+
+  function renderComparison(records) {
+    const comparison = recordCodec.buildGroupComparison(records, bank.questions);
+    const results = records.map(scoreRecord);
+    $("comparisonSummary").textContent = records.length + " 人接力完成 · 共出現 " + comparison.rows.length + " 道不同題目";
     $("comparisonAxes").innerHTML = "";
     Object.keys(bank.dimensions).forEach(function (key) {
       const meta = bank.dimensions[key];
-      const first = firstResult.scores[key].leftPercentage;
-      const second = secondResult.scores[key].leftPercentage;
+      const values = results.map(function (result) { return result.scores[key].leftPercentage; });
+      const low = Math.min.apply(null, values);
+      const high = Math.max.apply(null, values);
       const card = document.createElement("div");
       card.className = "comparison-axis-card";
       card.innerHTML =
-        "<div><b>" + meta.label + "</b><span>相差 " + Math.abs(first - second) + " 點</span></div>" +
-        "<p><span>對方 <strong>" + first + "</strong></span><i>" + meta.left + "傾向</i><span>你 <strong>" + second + "</strong></span></p>";
+        "<div><b>" + meta.label + "</b><span>全桌跨度 " + (high - low) + " 點</span></div>" +
+        "<p><span>最低 <strong>" + low + "</strong></span><i>" + meta.left + "傾向</i><span>最高 <strong>" + high + "</strong></span></p>";
       $("comparisonAxes").appendChild(card);
     });
 
     $("comparisonRows").innerHTML = "";
     comparison.rows.forEach(function (row, index) {
       const item = document.createElement("article");
-      item.className = "comparison-row " + (row.status === "both" ? "is-shared" : "is-unmatched") + (row.sameAnswer ? " is-same" : "");
-      const firstLabel = row.firstAnswer === null ? "對方未抽到此題" : answerLabel(row.firstAnswer);
-      const secondLabel = row.secondAnswer === null ? "你未抽到此題" : answerLabel(row.secondAnswer);
-      item.innerHTML =
-        "<div class=\"comparison-question\"><span>" + String(index + 1).padStart(2, "0") + " · " + bank.issues[row.question.dimension][row.question.issue].label + " / " + row.question.topic + "</span><h3>" + row.question.text + "</h3></div>" +
-        "<div class=\"comparison-answer" + (row.firstAnswer === null ? " is-missing" : "") + "\"><small>對方</small><b>" + firstLabel + "</b></div>" +
-        "<div class=\"comparison-answer" + (row.secondAnswer === null ? " is-missing" : "") + "\"><small>你</small><b>" + secondLabel + "</b></div>";
+      item.className = "comparison-row" + (row.answeredCount < records.length ? " is-unmatched" : "");
+      item.style.gridTemplateColumns = "minmax(280px,1.5fr) repeat(" + records.length + ",minmax(125px,.55fr))";
+      item.innerHTML = "<div class=\"comparison-question\"><span>" + String(index + 1).padStart(2, "0") + " · " + bank.issues[row.question.dimension][row.question.issue].label + " / " + row.question.topic + "</span><h3>" + row.question.text + "</h3></div>";
+      row.answers.forEach(function (answer, playerIndex) {
+        const cell = document.createElement("div");
+        cell.className = "comparison-answer" + (answer === null ? " is-missing" : "");
+        const small = document.createElement("small");
+        const value = document.createElement("b");
+        small.textContent = participantName(records[playerIndex], playerIndex, records.length);
+        value.textContent = answer === null ? "這次未抽到" : answerLabel(answer);
+        cell.appendChild(small);
+        cell.appendChild(value);
+        item.appendChild(cell);
+      });
       $("comparisonRows").appendChild(item);
     });
+
+    const clash = comparison.rows.slice().sort(function (a, b) { return b.spread - a.spread; })[0];
+    $("showdownCard").hidden = !clash || clash.spread === 0;
+    if (clash && clash.spread > 0) {
+      $("showdownTopic").textContent = bank.issues[clash.question.dimension][clash.question.issue].label + " · " + clash.question.topic;
+      $("showdownQuestion").textContent = clash.question.text;
+      const positions = clash.answers.map(function (answer, index) { return { answer, index }; }).filter(function (item) { return item.answer !== null && item.answer !== 3; });
+      const min = positions.slice().sort(function (a, b) { return a.answer - b.answer; })[0];
+      const max = positions.slice().sort(function (a, b) { return b.answer - a.answer; })[0];
+      $("showdownFirst").textContent = participantName(records[min.index], min.index, records.length) + "：" + answerLabel(min.answer);
+      $("showdownSecond").textContent = participantName(records[max.index], max.index, records.length) + "：" + answerLabel(max.answer);
+    }
   }
 
   function answerLabel(value) {
@@ -236,7 +303,7 @@
   }
 
   function startComparison() {
-    state.comparisonSource = state.lastRecords[0];
+    state.comparisonSources = state.lastRecords.slice();
     localStorage.removeItem(storageKey);
     createSession();
     renderQuestion();
@@ -244,7 +311,7 @@
   }
 
   function restart() {
-    state.comparisonSource = null;
+    state.comparisonSources = [];
     state.lastRecords = [];
     clearRecordHash();
     createSession();
@@ -259,18 +326,34 @@
     setTimeout(function () { $("toast").classList.remove("is-visible"); }, 2200);
   }
 
-  function shareResult() {
+  async function shareResult() {
     const result = state.lastResult;
     const profile = types[result.type];
-    const lines = [(state.lastRecords.length === 2 ? "我的比較結果：" : "我的政見座標：") + result.type + "「" + profile.name + "」"];
+    const talk = state.discussionProfile;
+    const lines = [(state.lastRecords.length >= 2 ? "我們的共同討論桌（" + state.lastRecords.length + " 人）：" : "我的政見座標：") + result.type + "「" + profile.name + "」"];
+    if (talk) lines.push("討論系人格：" + talk.archetype + "｜立場音量 " + talk.heat + "%");
+    if (profile.thought) lines.push("思想鄰居：" + profile.thought.thinker + "｜延伸閱讀 " + profile.thought.work);
     Object.keys(bank.dimensions).forEach(function (key) {
       const meta = bank.dimensions[key];
       const score = result.scores[key];
       lines.push(meta.left + " " + score.leftPercentage + "｜" + score.rightPercentage + " " + meta.right);
     });
-    if (state.lastRecords.length === 2) lines.push("網址包含雙方逐題比較；未抽到的題目會分別標記。");
+    if (state.lastRecords.length >= 2) lines.push("網址包含全員逐題比較；你也可以加入答案再分享給下一位。");
+    if (talk && talk.prompts.length) {
+      const prompt = talk.prompts[state.debateIndex % talk.prompts.length];
+      lines.push("想問你：" + prompt.question, "我選「" + prompt.answer + "」，你呢？");
+    }
     lines.push("完整紀錄網址：", location.href, "任何拿到網址的人都能查看其中的作答紀錄。");
-    navigator.clipboard.writeText(lines.join("\n")).then(function () { showToast("結果與紀錄網址已複製"); }).catch(function () { showToast("無法複製，請檢查瀏覽器權限"); });
+    const text = lines.join("\n");
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "政見座標｜共同討論桌", text: lines.slice(0, -3).join("\n"), url: location.href });
+        return;
+      } catch (error) {
+        if (error && error.name === "AbortError") return;
+      }
+    }
+    navigator.clipboard.writeText(text).then(function () { showToast("討論桌與紀錄網址已複製"); }).catch(function () { showToast("無法複製，請檢查瀏覽器權限"); });
   }
 
   function importFriendRecord(event) {
@@ -285,7 +368,7 @@
     $("friendUrlStatus").textContent = "";
     $("friendUrlInput").removeAttribute("aria-invalid");
     writeRecordHash(decoded.records);
-    renderRecords(decoded.records, decoded.records.length === 1);
+    renderRecords(decoded.records, true);
     if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
   }
 
@@ -297,10 +380,12 @@
       return;
     }
     if (decoded.format === "legacy") writeRecordHash(decoded.records);
-    renderRecords(decoded.records, decoded.records.length === 1);
+    renderRecords(decoded.records, true);
     if (decoded.bankVersion !== bank.version) showToast("這份紀錄來自不同題庫版本，已用相同題號還原");
   }
 
+  $("participantName").value = localStorage.getItem(nameStorageKey) || "";
+  $("participantName").addEventListener("input", function () { localStorage.setItem(nameStorageKey, $("participantName").value); });
   $("startButton").addEventListener("click", start);
   $("friendImportForm").addEventListener("submit", importFriendRecord);
   $("backButton").addEventListener("click", function () { if (state.current > 0) { state.current -= 1; saveProgress(); renderQuestion(); } });
@@ -308,6 +393,7 @@
   $("compareButton").addEventListener("click", startComparison);
   $("restartButton").addEventListener("click", restart);
   $("shareButton").addEventListener("click", shareResult);
+  $("nextDebateButton").addEventListener("click", function () { state.debateIndex += 1; renderDebatePrompt(); });
   $("methodButton").addEventListener("click", function () { $("methodDialog").showModal(); });
   $("closeMethodButton").addEventListener("click", function () { $("methodDialog").close(); });
   $("methodDialog").addEventListener("click", function (event) { if (event.target === $("methodDialog")) $("methodDialog").close(); });

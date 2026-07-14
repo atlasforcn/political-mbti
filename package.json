@@ -1,0 +1,9 @@
+{
+  "name": "political-values-taiwan",
+  "version": "4.0.1",
+  "private": true,
+  "scripts": {
+    "test": "node --test",
+    "serve": "python3 -m http.server 4173"
+  }
+}

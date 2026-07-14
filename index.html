@@ -1,0 +1,216 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="用四條價值軸探索政治傾向，將完整作答保存在 hash 網址，並和朋友跨題組逐題比較。">
+  <title>政見座標｜政治價值傾向測驗</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;600;700;800&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css?v=4.0.1">
+</head>
+<body>
+  <header class="site-header">
+    <a class="brand" href="#" aria-label="政見座標首頁">
+      <span class="brand-mark" aria-hidden="true">政</span>
+      <span>政見座標</span>
+    </a>
+    <button class="text-button" id="methodButton" type="button">方法說明</button>
+  </header>
+
+  <main>
+    <section class="screen intro-screen is-active" id="introScreen">
+      <div class="intro-copy">
+        <p class="kicker">POLITICAL VALUES · TAIWAN</p>
+        <h1>你的政治立場，<br><span>不只一條左右線。</span></h1>
+        <p class="lede">從公共角色、分配原則、改革步調與責任歸因四條軸線，整理你面對公共議題時的價值選擇。</p>
+        <div class="intro-actions">
+          <button class="primary-button" id="startButton" type="button">開始 16 題測驗 <span aria-hidden="true">→</span></button>
+          <p>64 題題庫涵蓋 16 個議題 · 平衡抽取 16 題 · 約 3–5 分鐘</p>
+        </div>
+        <div class="participant-name">
+          <label for="participantName">分享時怎麼稱呼你？</label>
+          <input id="participantName" type="text" maxlength="20" autocomplete="nickname" placeholder="輸入暱稱（最多 20 字）">
+        </div>
+        <form class="friend-import" id="friendImportForm" novalidate>
+          <label for="friendUrlInput"><span>COMPARE / A FRIEND</span>貼上朋友的結果網址</label>
+          <div>
+            <input id="friendUrlInput" type="text" inputmode="url" autocomplete="off" placeholder="https://…/#r=v4_0_0;R01A…" aria-describedby="friendUrlHelp friendUrlStatus">
+            <button class="secondary-button" type="submit">讀取結果 →</button>
+          </div>
+          <p id="friendUrlHelp">可貼完整網址，或只貼 <code>#r=…</code> 紀錄碼。</p>
+          <p class="import-status" id="friendUrlStatus" role="status"></p>
+        </form>
+      </div>
+      <div class="axis-preview" aria-label="四條測量軸線">
+        <p class="preview-label">本測驗觀察的四組張力</p>
+        <div class="preview-row"><b>公共保障</b><span></span><b>市場自治</b></div>
+        <div class="preview-row"><b>結果平等</b><span></span><b>程序公平</b></div>
+        <div class="preview-row"><b>積極改革</b><span></span><b>穩健漸進</b></div>
+        <div class="preview-row"><b>個人能動</b><span></span><b>結構脈絡</b></div>
+        <p class="preview-note">這是探索工具，不是政黨配對，也不是心理診斷。</p>
+      </div>
+      <div class="intro-index" aria-hidden="true">01—04</div>
+    </section>
+
+    <section class="screen quiz-screen" id="quizScreen" aria-live="polite">
+      <div class="quiz-meta">
+        <div>
+          <p class="kicker" id="dimensionLabel">公共角色</p>
+          <p class="question-count"><span id="questionNumber">01</span> / <span id="questionTotal">16</span></p>
+        </div>
+        <button class="icon-button" id="closeButton" type="button" aria-label="暫停並回到首頁" title="暫停並回到首頁">×</button>
+      </div>
+      <div class="progress-track" aria-hidden="true"><span id="progressBar"></span></div>
+      <article class="question-panel">
+        <p class="topic" id="topicLabel">社會安全</p>
+        <aside class="question-context" id="questionContext" aria-labelledby="contextLabel">
+          <div><span id="contextLabel">作答前先看現況</span><b id="contextAsOf"></b></div>
+          <p id="contextText"></p>
+          <nav class="context-sources" id="contextSources" aria-label="本題官方資料來源"></nav>
+        </aside>
+        <h2 id="questionText"></h2>
+        <fieldset class="answer-scale" id="answerScale">
+          <legend class="sr-only">選擇同意程度</legend>
+        </fieldset>
+        <div class="quiz-nav">
+          <button class="secondary-button" id="backButton" type="button">← 上一題</button>
+          <span>按 1–5 也能作答</span>
+        </div>
+      </article>
+    </section>
+
+    <section class="screen result-screen" id="resultScreen">
+      <div class="result-heading">
+        <p class="kicker">YOUR VALUE PROFILE</p>
+        <p class="result-code" id="resultCode">SEAC</p>
+        <h1 id="resultName">公共改革協作者</h1>
+        <p id="resultSummary"></p>
+      </div>
+      <section class="conversation-deck" aria-labelledby="conversationTitle">
+        <div class="conversation-intro">
+          <p class="kicker">THE PART PEOPLE WILL ARGUE ABOUT</p>
+          <h2 id="conversationTitle">你的政治人格，不只四個字母。</h2>
+          <p>這一區是從你的作答中抓出最鮮明與最矛盾的地方，適合拿來開話題；它不是新的計分維度。</p>
+        </div>
+        <article class="persona-stamp">
+          <span>你的討論系人格</span>
+          <strong id="discussionArchetype">安全網編織者</strong>
+          <p id="discussionArchetypeCopy"></p>
+          <i id="discussionAxis">最鮮明軸線 · 公共角色</i>
+        </article>
+        <article class="heat-card">
+          <span>立場音量</span>
+          <strong><b id="discussionHeat">0</b><small>%</small></strong>
+          <div class="heat-meter" aria-hidden="true"><i id="discussionHeatBar"></i></div>
+          <p id="discussionHeatLabel">先聽再說</p>
+        </article>
+        <article class="rebel-card" id="rebelCard">
+          <span>最不像你的一票</span>
+          <strong id="rebelTopic"></strong>
+          <p id="rebelQuestion"></p>
+          <small id="rebelAnswer"></small>
+        </article>
+        <article class="debate-card">
+          <div><span>丟給朋友的開戰題</span><button id="nextDebateButton" type="button">換一題 ↻</button></div>
+          <strong id="debateTopic"></strong>
+          <blockquote id="debateQuestion"></blockquote>
+          <p>我的答案：<b id="debateAnswer"></b>。你呢？</p>
+        </article>
+      </section>
+      <div class="result-grid">
+        <section class="axis-results" aria-labelledby="axisTitle">
+          <div class="section-heading"><h2 id="axisTitle">四軸座標</h2><span>50 為中線</span></div>
+          <div id="axisResults"></div>
+          <section class="government-profile" id="governmentProfile" aria-labelledby="governmentTitle">
+            <div class="government-heading">
+              <div><p class="kicker">ISSUE DEPENDENT</p><h2 id="governmentTitle">你的政府邊界</h2></div>
+              <span id="governmentGap">兩類落差 0 點</span>
+            </div>
+            <div class="government-reading">
+              <strong id="governmentReading">邊界仍在拉鋸</strong>
+              <p id="governmentSummary"></p>
+            </div>
+            <div class="facet-row">
+              <div class="facet-meta"><b>社會保障</b><span class="facet-values"><span>共同承擔 <strong id="socialGovernmentLeftValue">50</strong></span><i>/</i><span><strong id="socialGovernmentRightValue">50</strong> 個人選擇</span></span></div>
+              <div class="facet-track"><span id="socialGovernmentBar"></span><i id="socialGovernmentMarker"></i></div>
+            </div>
+            <div class="facet-row">
+              <div class="facet-meta"><b>經濟治理</b><span class="facet-values"><span>公共介入 <strong id="economyGovernmentLeftValue">50</strong></span><i>/</i><span><strong id="economyGovernmentRightValue">50</strong> 市場放手</span></span></div>
+              <div class="facet-track"><span id="economyGovernmentBar"></span><i id="economyGovernmentMarker"></i></div>
+            </div>
+          </section>
+        </section>
+        <aside class="result-notes">
+          <p class="note-number" id="resultNoteNumber">16 / TYPES</p>
+          <h2 id="resultNoteTitle">怎麼閱讀？</h2>
+          <p id="resultNoteBody">代碼記錄每條軸較接近的一端；長條保留連續位置。「政府邊界」不另加一個人格字母，而是比較你在社會保障與經濟治理上的選擇，讓議題間的矛盾不被平均掉。</p>
+          <div class="result-actions">
+            <button class="primary-button" id="compareButton" type="button" hidden>加入我的答案 <span aria-hidden="true">→</span></button>
+            <button class="primary-button" id="shareButton" type="button">分享這張討論桌</button>
+            <button class="secondary-button" id="restartButton" type="button">重新測驗</button>
+          </div>
+        </aside>
+      </div>
+      <section class="thought-neighbor" aria-labelledby="thoughtTitle">
+        <div class="thought-label">
+          <p class="kicker">YOUR INTELLECTUAL NEIGHBOR</p>
+          <span>不是思想配對，也不代表這位作者會同意你的所有答案。</span>
+        </div>
+        <div class="thought-person">
+          <p>你的思想鄰居</p>
+          <h2 id="thoughtTitle"><span id="thoughtThinker"></span></h2>
+          <small id="thoughtField"></small>
+        </div>
+        <blockquote id="thoughtQuestion"></blockquote>
+        <div class="thought-reading">
+          <p id="thoughtConnection"></p>
+          <a id="thoughtLink" href="#" target="_blank" rel="noopener noreferrer">搜尋「<cite id="thoughtWork"></cite>」中文資料 ↗</a>
+        </div>
+      </section>
+      <section class="comparison-section" id="comparisonSection" aria-labelledby="comparisonTitle" hidden>
+        <div class="comparison-heading">
+          <div><p class="kicker">ANSWER BY ANSWER</p><h2 id="comparisonTitle">你們怎麼選？</h2></div>
+          <p id="comparisonSummary"></p>
+        </div>
+        <article class="showdown-card" id="showdownCard">
+          <span>今晚最好別先聊</span>
+          <strong id="showdownTopic"></strong>
+          <p id="showdownQuestion"></p>
+          <div><b id="showdownFirst"></b><i>VS</i><b id="showdownSecond"></b></div>
+        </article>
+        <div class="comparison-axes" id="comparisonAxes" aria-label="全員四軸比較"></div>
+        <div class="comparison-legend"><span><i class="legend-dot is-shared"></i>多人抽到同題</span><span><i class="legend-dot is-missing"></i>這次未抽到</span></div>
+        <div class="comparison-list" id="comparisonRows"></div>
+      </section>
+    </section>
+  </main>
+
+  <dialog id="methodDialog">
+    <div class="dialog-header">
+      <div><p class="kicker">METHODOLOGY</p><h2>方法與限制</h2></div>
+      <button class="icon-button" id="closeMethodButton" type="button" aria-label="關閉方法說明">×</button>
+    </div>
+    <div class="method-content">
+      <p>題目參考 WVS、TEDS、ESS 與 Pew 政治類型研究所涵蓋的公共議題，再依臺灣語境重新撰寫。每個議題另附有日期的臺灣制度背景與官方來源，協助玩家根據現況判斷，而不是測驗時事記憶。</p>
+      <h3>計分方式</h3>
+      <p>題庫共有 64 題，分成四條軸、16 個議題，每個議題各有 4 題且正、反向各 2 題。每次固定從每個議題抽 1 題，總共 16 題；各軸仍維持正、反向各 2 題。四個主要選項要求表達方向；「不確定」不參與計分。</p>
+      <h3>重要限制</h3>
+      <p>目前版本尚未以代表性台灣樣本做信度、效度與常模校準，因此不能宣稱是「受驗證的 MBTI」，也不能預測投票。政治觀點會隨議題、資訊與時間改變。</p>
+      <h3>紀錄網址</h3>
+      <p>完成後，暱稱、題號與答案會轉成精簡代碼，保存在網址的 hash（#r=…）中；同一網址最多接力保存 6 人。這是編碼而非加密；hash 不會傳送給網站伺服器，任何拿到完整網址的人仍能透過本網站讀取其中所有人的暱稱與作答紀錄。題目意義更新時會升級題庫版本，舊版紀錄不會套用到新題目。</p>
+      <a href="METHODOLOGY.md">閱讀完整題庫設計與資料來源 →</a>
+    </div>
+  </dialog>
+
+  <div class="toast" id="toast" role="status"></div>
+  <script src="questions.js?v=4.0.0"></script>
+  <script src="personality-types.js?v=4.0.0"></script>
+  <script src="scoring.js?v=4.0.0"></script>
+  <script src="quiz-session.js?v=4.0.0"></script>
+  <script src="record-codec.js?v=4.0.0"></script>
+  <script src="discussion-profile.js?v=4.0.0"></script>
+  <script src="app.js?v=4.0.0"></script>
+</body>
+</html>

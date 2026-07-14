@@ -149,7 +149,7 @@
     $("thoughtQuestion").textContent = "「" + thought.question + "」";
     $("thoughtConnection").textContent = thought.connection;
     $("thoughtWork").textContent = thought.work;
-    $("thoughtLink").href = thought.url;
+    $("thoughtLink").href = thought.searchUrl;
   }
 
   function renderDiscussion(record, result) {

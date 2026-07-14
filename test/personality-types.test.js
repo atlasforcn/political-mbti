@@ -9,5 +9,9 @@ test("all sixteen profiles include a complete intellectual-neighbor reading", ()
     ["thinker", "field", "work", "question", "connection", "url"].forEach((key) => {
       assert.ok(profile.thought[key], code + " is missing " + key);
     });
+    const search = new URL(profile.thought.searchUrl);
+    assert.equal(search.hostname, "www.google.com");
+    assert.match(search.searchParams.get("q"), new RegExp(profile.thought.thinker));
+    assert.match(search.searchParams.get("q"), /中文文章/);
   });
 });

@@ -40,7 +40,7 @@
             name,
             summary: "你較重視" + role[r] + "取向的公共角色、" + distribution[d] + "導向的分配原則，並偏好" + change[c] + "的改變步調；判斷社會成果時，你更著重" + agency[a] + "因素。",
             thought: Object.assign({}, thought, {
-              searchUrl: "https://www.google.com/search?q=" + encodeURIComponent(thought.thinker + " " + thought.work + " 思想 入門 中文文章")
+              searchUrl: "https://www.google.com/search?q=" + encodeURIComponent(thought.thinker + " " + thought.work)
             })
           };
         });
